@@ -1,0 +1,7 @@
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\bin\Debug\TweakTech.dll
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\bin\Debug\TweakTech.pdb
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\obj\Debug\TweakTech.csprojAssemblyReference.cache
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\obj\Debug\TweakTech.csproj.CoreCompileInputs.cache
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\obj\Debug\TweakTech.dll
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\obj\Debug\TweakTech.pdb
+C:\Users\Legionite\Desktop\BalanceTech\TweakTech\TweakTech\bin\Debug\mod.json

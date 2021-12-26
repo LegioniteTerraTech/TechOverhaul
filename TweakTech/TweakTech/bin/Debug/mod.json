@@ -1,0 +1,9 @@
+﻿{
+  "Id": "legioniteterratech.tweaktech",
+  "DisplayName": "Tweak Tech",
+  "Author": "Legionite",
+  "Version": "0.1.0",
+  "Enable": true,
+  "AssemblyName": "TweakTech.dll",
+  "EntryMethod": "TweakTech.KickStart.Main"
+}
