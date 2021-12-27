@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TAC_AI.AI;
 using UnityEngine;
+using System.Reflection;
 
 namespace TweakTech
 {
@@ -13,6 +14,10 @@ namespace TweakTech
         private ModuleWeaponGun WeapG;
         public float GravSpeedModifier = 1;
         public Func<Vector3, Vector3> swatch;
+
+
+        private static readonly FieldInfo SeekStrength = typeof(SeekingProjectile).GetField("m_TurnSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
+
         public static ReAimer ApplyToBlock(TankBlock TB)
         {
             if (TB.GetComponentInChildren<BeamWeapon>() || TB.GetComponent<FireDataShotgun>())
@@ -28,16 +33,43 @@ namespace TweakTech
                     RA.block = TB;
                     RA.Weap = WeapNew;
                     RA.WeapG = MWG;
-                    if (MWG.AimWithTrajectory())
+                    if (TB.GetComponent<FireData>())
                     {
-                        RA.swatch = RA.RoughPredictAim;
-                        //Debug.Log("TweakTech: Changed TargetAimer(Arc) for " + TB.name);
-                    }
-                    else
-                    {
-                        RA.swatch = RA.RoughPredictAimS;
+                        var BF = TB.GetComponent<FireData>().m_BulletPrefab;
+                        if ((bool)BF)
+                        {
+                            var rbody = BF.GetComponent<Rigidbody>();
+                            var missile = BF.GetComponent<MissileProjectile>();
+                            if (!(bool)missile)
+                            {
+                                if ((bool)rbody?.useGravity)
+                                {
+                                    RA.swatch = RA.RoughPredictAim;
+                                    return RA;
+                                }
+                            }
+                            else
+                            {
+                                var seek = BF.GetComponent<SeekingProjectile>();
+                                if (seek)
+                                {
+                                    if (25 >= (float)SeekStrength.GetValue(seek))
+                                    {
+                                        RA.swatch = RA.RoughPredictAim;
+                                        return RA;
+                                    }
+                                }
+                                else
+                                {
+                                    RA.swatch = RA.RoughPredictAim;
+                                    return RA;
+                                }
+                            }
+                            //Debug.Log("TweakTech: Changed TargetAimer(Arc) for " + TB.name);
+                        }
                         //Debug.Log("TweakTech: Changed TargetAimer(Straight) for " + TB.name);
                     }
+                    RA.swatch = RA.RoughPredictAimS;
                     return RA;
                 }
             }
@@ -93,17 +125,31 @@ namespace TweakTech
                 velo = 1;
             //Debug.Log("TweakTech: RoughPredictAim - " + GravSpeedModifier);
 
+            float grav = -(Physics.gravity.y * GravSpeedModifier);
             Vector3 targPos = TargetPos;
+            Vector3 posVec = TargetPos - WeapG.GetFireTransform().position;
             if (TankLazyAim.FetchVelocityDifference(block.tank, out Vector3 VeloDiff))
             {
-                Vector3 posVec = TargetPos - WeapG.GetFireTransform().position;
-                float roughDist = posVec.magnitude / velo;
-                targPos = TargetPos + (VeloDiff * roughDist);
+                float MaxRangeVelo = velo * 0.7071f;
+                float MaxTime = MaxRangeVelo / grav;
+                float MaxDist = MaxTime * MaxRangeVelo;
+
+                float veloVecMag = posVec.magnitude;
+                float distDynamic = veloVecMag / MaxDist;
+                if (distDynamic > 1)
+                    distDynamic = 1;
+                float roughTime = veloVecMag / (velo * (0.7071f + ((1 - distDynamic) * 0.2929f)));
+                // this works I don't even know how
+                Vector3 VeloDiffCorrected = VeloDiff;
+                VeloDiffCorrected.y = 0;
+                // The power of cos at 45 degrees compels thee
+                VeloDiffCorrected = VeloDiffCorrected.magnitude * 0.7071f * VeloDiffCorrected.normalized;
+                VeloDiffCorrected.y = VeloDiff.y;
+                targPos = TargetPos + (VeloDiffCorrected * roughTime);
             }
 
             // Aim with rough predictive trajectory
             velo *= velo;
-            float grav = -(Physics.gravity.y * GravSpeedModifier);
             Vector3 direct = targPos - WeapG.GetFireTransform().position;
             Vector3 directFlat = direct;
             directFlat.y = 0;
