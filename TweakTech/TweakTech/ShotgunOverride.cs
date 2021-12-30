@@ -7,7 +7,7 @@ using UnityEngine;
 namespace TweakTech
 {
 	/// <summary>
-	/// this is a literal copy of what matters from ShotgunRound because ApplyDamageToObjectsInArc is nearly impossible to override
+	/// This is a partial copy of what matters from ShotgunRound because ApplyDamageToObjectsInArc is nearly impossible to override
 	///    please don't sue me
 	/// </summary>
 	public class ShotgunOverride : ShotgunRound
