@@ -198,7 +198,7 @@ namespace TweakTech
 
 
         internal ProjSpeedChange ProjSpeedChange = ProjSpeedChange.Default;
-        internal float ProjSpeedChangeMulti = 0;
+        internal float ProjSpeedChangeMulti = 1;
         internal float OverrideTraverse = 0;
         internal float OverrideCooldown = 0;
         internal float OverrideBurstCooldown = 0;

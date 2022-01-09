@@ -79,12 +79,15 @@
   <ItemGroup>
     <Compile Include="BlockTweak.cs" />
     <Compile Include="ChangePatcher.cs" />
+    <Compile Include="DamageTypesExt.cs" />
     <Compile Include="DamageTweak.cs" />
     <Compile Include="EnemyRaidDispatcher.cs" />
     <Compile Include="KickStart.cs" />
+    <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReAimer.cs" />
     <Compile Include="ShotgunOverride.cs" />
+    <Compile Include="StatusCondition.cs" />
     <Compile Include="Tweaks.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using HarmonyLib;
 using UnityEngine;
 
 namespace TweakTech
@@ -15,7 +14,7 @@ namespace TweakTech
         internal const float PlayerDamageMulti = 1f;
 
         public static bool UseGlobalHealthMulti = true;
-        internal const float GlobalHealthMulti = 2f;
+        internal static float GlobalHealthMulti = 1;//1.5f;//2f;
         internal const float GlobalDetachMulti = 0.5f;
 
         internal const float HighExplosiveSpeedMulti = 0.4f;
@@ -71,6 +70,7 @@ namespace TweakTech
                 Transform trans = bloc.transform;
                 try
                 {
+
                     if (Singleton.Manager<ManSpawn>.inst.GetCorporation(BT) == FactionSubTypes.GC)
                     {
                         var dmg = trans.GetComponent<Damageable>();
@@ -415,32 +415,6 @@ namespace TweakTech
             }
             arraydmge = arraydmge2;
         }
-        /* OG
-         * Standard,    - meh jack of all trades
-		 * Bullet,      - Shield Counter
-		 * Energy,      - Armor Counter
-		 * Explosive,   - Ranged Universal Tech punisher
-		 * Impact,      - Expensive Block Counter
-		 * Fire,        - DoT dealer
-		 * Cutting,     - Melee Light Tech punisher
-		 * Plasma,      - Slow Tech punisher
-		 * (NEW)
-		 * Cyro,        - Same as Energy
-		 * EMP,         - Specialized shield destroyer
-		 * 
-		 * CHANGES
-         * Standard,    - meh jack of all trades    (Changed to Bullet)
-		 * Bullet,      - Shield/Slow/Ground Counter(General-Purpose)
-		 * Energy,      - Armor/Fast/Air Counter    (Raider Weapon)
-		 * Explosive,   - Slow/Base Tech Punisher   (Artillery (Slow))
-		 * Impact,      - Melee Splash damage dealer(Push Effects)
-		 * Fire,        - Expensive Tech Counter    (Damage Stacking)               [GRADIENT ORANGE OUTLINE]
-		 * Cutting,     - Tanky Tech punisher       (Weakens block fragilities)     [SOLID RED OUTLINE]
-		 * Plasma,      - Super Tech Punisher       (Damage dealt by PERCENT)
-		 * (NEW)
-		 * Cyro,        - Fast Tech punisher        (Slows hit blocks up to 50%)    [SOLID BLUE OUTLINE]
-		 * EMP,         - Heavy Shield Spam Counter (Disables at half BLOCK health) [FLASHING YELLOW OUTLINE]
-         */
     }
 
     internal enum ProjSpeedChange
@@ -451,110 +425,6 @@ namespace TweakTech
         SlowedFast,
     }
 
-    internal class Patches
-    {
-        [HarmonyPatch(typeof(ManSpawn))]
-        [HarmonyPatch("OnDLCLoadComplete")]//
-        private class AdjustBlocks
-        {
-            private static void Postfix(ManSpawn __instance)
-            {
-                ChangePatcher.ApplyTweaks();
-            }
-        }
-
-        
-        [HarmonyPatch(typeof(ShotgunRound))]
-        [HarmonyPatch("Fire")]//
-        private class AdjustDamageShotgun
-        {
-            private static void Prefix(ManDamage __instance, ref Vector3 fireDirection, ref FireData fireData, ref ModuleWeapon weapon, ref Tank shooter, ref bool seekingRounds, ref bool replayRounds)
-            {
-                __instance.GetComponent<ShotgunOverride>().Fire(fireDirection, fireData, weapon, shooter, seekingRounds, replayRounds);
-            }
-        }
-
-
-        [HarmonyPatch(typeof(TargetAimer))]
-        [HarmonyPatch("Init")]//
-        private class ChangeAimDelegate
-        {
-            static FieldInfo aimD = typeof(TargetAimer).GetField("AimDelegate", BindingFlags.NonPublic | BindingFlags.Instance);
-            private static bool Prefix(TargetAimer __instance, ref TankBlock block, ref Func<Vector3, Vector3> aimDelegate)
-            {
-                if (KickStart.WeaponAimModAvail)
-                    return true;
-                try
-                {
-                    if ((Func<Vector3, Vector3>)aimD.GetValue(__instance) != null && aimDelegate != null)
-                        return false;
-                }
-                catch
-                { //Debug.Log("TweakTech: Error with TargetAimer for " + block.name); 
-                }
-                return true;
-            }
-            private static void Postfix(TargetAimer __instance, ref TankBlock block, ref Func<Vector3,Vector3> aimDelegate)
-            {
-                if (KickStart.WeaponAimModAvail)
-                    return;
-                try
-                {
-                    //aimDelegate == null && 
-                    if ((bool)block)
-                    {
-                        var RA = block.GetComponent<ReAimer>();
-                        if (!(bool)RA)
-                        {
-                            RA = ReAimer.ApplyToBlock(block);
-                        }
-                        else
-                            ReAimer.UpdateExisting(block);
-                        aimD.SetValue(__instance, RA.swatch);
-                    }
-                }
-                catch { //Debug.Log("TweakTech: Error with TargetAimer for " + block.name); 
-                }
-            }
-        }
-
-
-        [HarmonyPatch(typeof(ModuleWeapon))]
-        [HarmonyPatch("OnAttach")]//
-        private class AddLazyAim
-        {
-            private static void Prefix(ModuleWeapon __instance)
-            {
-                if (KickStart.WeaponAimModAvail)
-                    return;
-                TankLazyAim.Add(__instance.block.tank, __instance);
-            }
-        }
-
-        [HarmonyPatch(typeof(ModuleWeapon))]
-        [HarmonyPatch("OnDetach")]//
-        private class RemoveLazyAim
-        {
-            private static void Prefix(ModuleWeapon __instance)
-            {
-                if (KickStart.WeaponAimModAvail)
-                    return;
-                TankLazyAim.Remove(__instance.block.tank, __instance);
-            }
-        }
-
-        [HarmonyPatch(typeof(ModuleDamage))]
-        [HarmonyPatch("OnSpawn")]//
-        private class ChangeAllBlockHealths
-        {
-            private static void Postfix(ModuleDamage __instance)
-            {
-                if (!ChangePatcher.UseGlobalHealthMulti)
-                    return;
-                __instance.block.visible.damageable.SetMaxHealth(__instance.maxHealth * ChangePatcher.GlobalHealthMulti);
-            }
-        }
-    }
 
     internal class FDBookmark : Module
     {

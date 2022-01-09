@@ -85,18 +85,18 @@ namespace TweakTech
                 WT = new WeaponTweak {
                     ProjSpeedChange = ProjSpeedChange.SlowedFast,
                     ProjSpeedChangeMulti = 1,//2
-                    OverrideTraverse = 75,
+                    OverrideTraverse = 75, // yes it's better than the Megaton
                 }
             },
             new BlockTweak {
                 Type = BlockTypes.GSOMiniMissile_222,
                 WT = new WeaponTweak {
                     // Better against aircraft like in Sam Site
-                    ProjSpeedChange = ProjSpeedChange.Fast,
-                    ProjSpeedChangeMulti = 1.25f,
+                    //ProjSpeedChange = ProjSpeedChange.Fast,
+                    //ProjSpeedChangeMulti = 1.25f,
                     OverrideTraverse = 145,
-                    OverrideCooldown = 0.5f,
-                    OverrideBurstCooldown = 0.5f,
+                    //OverrideCooldown = 0.5f,
+                    //OverrideBurstCooldown = 0.5f,
                 }
             },
             // GC
@@ -157,6 +157,7 @@ namespace TweakTech
                     ProjSpeedChangeMulti = 2.25f,
                 }
             },
+            /*
             new BlockTweak {
                 Type = BlockTypes.VENTurretRoundabout_111,
                 WT = new WeaponTweak {
@@ -176,11 +177,12 @@ namespace TweakTech
                     ProjSpeedChange = ProjSpeedChange.Fast,
                     ProjSpeedChangeMulti = 1.5f,
                 }
-            },
+            },*/
             new BlockTweak {
                 Type = BlockTypes.VENFlameThrower_121,
                 HPChange = 175, // Really weak as-is for a volitile melee weapon
             },
+            /*
             new BlockTweak {
                 Type = BlockTypes.VENRPGLauncher_122,
                 HPChange = 125, // Buff due to weakening of tracking
@@ -199,7 +201,7 @@ namespace TweakTech
                     ExploRadMulti = 1.75f,
                 },
                 MiscChanges = SpecChanges.NerfTracking,
-            },
+            },*/
             new BlockTweak {
                 Type = BlockTypes.VENCannonRapid_313,
                 WT = new WeaponTweak {
@@ -242,6 +244,7 @@ namespace TweakTech
                     OverrideTraverse = 80, //slower
                 }
             },
+            /*
             new BlockTweak {
                 Type = BlockTypes.HE_TurretRoundabout_111,
                 WT = new WeaponTweak {
@@ -254,12 +257,12 @@ namespace TweakTech
                     ExploRadMulti = 1.5f,
                 },
                 //MiscChanges = SpecChanges.DoubleHoming,
-            },
+            },*/
             new BlockTweak {
                 Type = BlockTypes.HE_Mortar_232,
                 WT = new WeaponTweak {
                     //ProjSpeedChange = ProjSpeedChange.SlowedFast,
-                    ProjSpeedChangeMulti = 1f, //SUPER FAST MORTAR FLIGHT
+                    ProjSpeedChangeMulti = 1f,
                     DirectDamageMulti = 2.0f,
                     EditExplosion = true,
                     ExploDamgMulti = 2.0f,
@@ -273,7 +276,7 @@ namespace TweakTech
                 WT = new WeaponTweak {
                     ProjSpeedChange = ProjSpeedChange.SlowedFast,
                     ProjSpeedChangeMulti = 1,//3
-                    OverrideTraverse = 60,
+                    OverrideTraverse = 65,
                 }
             },
             new BlockTweak {
@@ -295,16 +298,18 @@ namespace TweakTech
                     OverrideCooldown = 0.1f,
                 }
             },
+            /*
             new BlockTweak {
                 Type = BlockTypes.HE_MissilePod_122,
                 WT = new WeaponTweak {
                     ChangeSeeking = 0, // For first phase
                     ProjSpeedChange = ProjSpeedChange.Fast,
-                    ProjSpeedChangeMulti = 2f,
+                    ProjSpeedChangeMulti = 1.75f,
                 },
                 MiscChanges = SpecChanges.MultiStageWeapon,
-            },
+            },*/
             new BlockTweak {
+                // Overhaul cruise missile to have same range, but slower travel speed to permit dodge
                 Type = BlockTypes.HE_Cruise_Missile_51_121,
                 WT = new WeaponTweak {
                     ProjSpeedChange = ProjSpeedChange.Fast,
@@ -365,7 +370,7 @@ namespace TweakTech
             new BlockTweak {
                 Type = BlockTypes.BF_Laser_Turret_313,
                 WT = new WeaponTweak {
-                    OverrideTraverse = 9,// Orbiting harassment weapon
+                    OverrideTraverse = 90,// Orbiting harassment weapon
                 }
             },
             new BlockTweak {
@@ -388,6 +393,174 @@ namespace TweakTech
                 },
             },
 
+            // ARMOR
+            new BlockTweak {
+                Type = BlockTypes.GCArmourPlate_221,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCArmourPlate_421,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GC_ArmourPlate_121,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GSOArmourPlateCab_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GSOArmourPlateLarge_222,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GSOArmourPlateMedium_211,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GSOArmourPlateSmall_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_10_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_114,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_11_121,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_122,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_123,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_124,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_12_131,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_CornerInt_112,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_CornerInt_113,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_CornerInt_114,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Corner_112,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Corner_113,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Corner_114,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Corner_212,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Edge_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Edge_211,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Edge_InsideCorner_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Edge_OutsideCorner_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmouredBlock_Edge_OutsideCorner_212,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmourPlate_111,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmourPlate_211,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmourPlate_221,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_ArmourPlate_Extended_221,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+
+            // ETC Buffs
+            //  GC Crash resistance
+            new BlockTweak {
+                Type = BlockTypes.GCArticulatedDrill_423,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCBuzzSaw_246,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCDiggerScoop_433,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCJackHammer_244,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCJackHammer_Straight_226,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCTripleBore_234,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCMiningFlail_442,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCMiningFlail_663,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCFlail_446,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCBuzzSaw_312,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GCRamSpike_223,
+                MiscChanges = SpecChanges.MakeArmored,
+            },
         };
 
         internal static List<DamageTweak> DMGTweaks = new List<DamageTweak>(){
@@ -399,13 +572,25 @@ namespace TweakTech
 
     internal static class SpecChanges
     {
+        internal static void MakeArmored(TankBlock TB, bool AlreadyDid, BlockTypes Override)
+        {
+            if (KickStart.RandomAdditionsAvail)
+            {
+                var endurance = TB.GetComponent<ModuleReinforced>();
+                if (!endurance)
+                    endurance = TB.gameObject.AddComponent<ModuleReinforced>();
+                endurance.DenyExplosion = true;
+            }
+        }
+
+
         private static FieldInfo lifeTime = typeof(Projectile).GetField("m_LifeTime", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo boostJ = typeof(BoosterJet).GetField("m_Force", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo boostS = typeof(MissileProjectile).GetField("m_BoosterActivationDelay", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo boost = typeof(MissileProjectile).GetField("m_MaxBoosterLifetime", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static FieldInfo armTime = typeof(MissileProjectile).GetField("m_ArmDelay", BindingFlags.NonPublic | BindingFlags.Instance);
         private static FieldInfo seekDist = typeof(SeekingProjectile).GetField("m_VisionRange", BindingFlags.NonPublic | BindingFlags.Instance);
-        private static FieldInfo seekSped = typeof(SeekingProjectile).GetField("m_TurnSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
-
+        private static FieldInfo seekSped = typeof(SeekingProjectile).GetField("m_TurnSpeed", BindingFlags.NonPublic | BindingFlags.Instance); 
         /// <summary>
         /// Delay missile control
         /// </summary>
@@ -470,12 +655,12 @@ namespace TweakTech
                                 stage3.DeployOnExplode = true;
                                 stage3.UseSeeking = true;
 
-                                boostS.SetValue(GO2.GetComponent<MissileProjectile>(), 0.25f);
-                                boost.SetValue(GO2.GetComponent<MissileProjectile>(), 1.25f);
-                                lifeTime.SetValue(GO2.GetComponent<Projectile>(), 1.25f);
+                                boostS.SetValue(GO2.GetComponent<MissileProjectile>(), 0.0f);
+                                boost.SetValue(GO2.GetComponent<MissileProjectile>(), 0.25f);
+                                lifeTime.SetValue(GO2.GetComponent<Projectile>(), 1.75f);
                                 var SP2 = GO2.GetComponent<SeekingProjectile>();
                                 seekDist.SetValue(SP2, SeD * 4f);
-                                seekSped.SetValue(SP2, SeS / 2); // One-turn
+                                seekSped.SetValue(SP2, SeS / 1.5f); // One-turn
                             }
                             else
                             {
@@ -507,25 +692,34 @@ namespace TweakTech
                                 lifeTime.SetValue(GO3.GetComponent<Projectile>(), prevValL);
                                 var SP3 = GO3.GetComponent<SeekingProjectile>();
                                 seekDist.SetValue(SP3, SeD * 2.5f);
-                                seekSped.SetValue(SP3, SeS / 4f); // After one-turn it suffers
+                                seekSped.SetValue(SP3, SeS / 6f); // After one-turn it suffers
                             }
                             else
                             {
                                 GO3 = FD3.gameObject;
                             }
-                            DisableExplode(GO.GetComponent<Projectile>());
+                            Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 0");
                             DisableExplode(GO2.GetComponent<Projectile>());
 
+                            Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 1");
                             // Stage 1 - Launch
                             var stage2 = GO.GetComponent<SpiltProjectile>();
                             if (!stage2)
                                 stage2 = GO.AddComponent<SpiltProjectile>();
+                            Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 2");
                             stage2.SpawnAmount = 1;
                             stage2.DeployOnExplode = true;
                             stage2.UseSeeking = true;
 
+                            Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 3");
                             boost.SetValue(GO.GetComponent<MissileProjectile>(), 0.1f);
-                            lifeTime.SetValue(GO.GetComponent<Projectile>(), val);
+                            var proj = BP.GetComponent<Projectile>();
+                            Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 4");
+                            lifeTime.SetValue(proj, val);
+                            Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 5");
+                            explode.SetValue(proj, null);
+                            //DisableExplode(GO.GetComponent<Projectile>());
+                            Debug.Log("TweakTech: MultiStageWeapon - There is an explosion in " + TB.name + "  | " + (bool)((Transform)explode.GetValue(proj)));
 
                             worked = true;
                         }

@@ -18,6 +18,9 @@ namespace TweakTech
         internal static bool WeaponAimModAvail = false;
         internal static bool TACAIModAvail = false;
 
+
+        //public static OptionRange multiHP;
+        public static OptionToggle blockHP150;
         public static OptionToggle maxRestrict;
         public static OptionRange reduceProjectiles;
         public static OptionRange reduceProjectilesThreshold;
@@ -34,6 +37,7 @@ namespace TweakTech
             Debug.Log("TweakTech: Kickstarted");
 
             ModConfig thisModConfig = new ModConfig();
+            thisModConfig.BindConfig<ChangePatcher>(null, "GlobalHealthMulti");
             thisModConfig.BindConfig<ChangePatcher>(null, "MaximumFireRateAdjust");
             thisModConfig.BindConfig<ChangePatcher>(null, "ProjectileReduction");
             thisModConfig.BindConfig<ChangePatcher>(null, "FirerateReductionMin");
@@ -56,6 +60,19 @@ namespace TweakTech
                 thisModConfig.WriteConfigJsonFile();
                 FDBookmark.EnableAll();
             });
+            /*
+            blockHP150 = new OptionToggle("(SP Only) Disable 1.5 Health Multiplier", Tweakables, !ChangePatcher.UseGlobalHealthMulti);
+            blockHP150.onValueSaved.AddListener(() => {
+                ChangePatcher.UseGlobalHealthMulti = !blockHP150.SavedValue;
+                thisModConfig.WriteConfigJsonFile();
+                FDBookmark.EnableAll();
+            });
+            
+            multiHP = new OptionRange("Block Health Muliplier [0.5 - 2.5] \n- Requires World Restart", Tweakables, ChangePatcher.GlobalHealthMulti, 0.5f, 2.5f, 0.5f);
+            multiHP.onValueSaved.AddListener(() => {
+                ChangePatcher.GlobalHealthMulti = multiHP.SavedValue;
+                thisModConfig.WriteConfigJsonFile();
+            });*/
         }
 
         public static bool LookForMod(string name)
