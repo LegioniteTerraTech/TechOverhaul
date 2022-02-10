@@ -197,7 +197,13 @@ namespace TweakTech
             if (target == null)
             {
                 if (KickStart.TACAIModAvail)
-                    target = tank.GetComponent<AIECore.TankAIHelper>().lastEnemy;
+                {
+                    var helper = tank.GetComponent<AIECore.TankAIHelper>();
+                    if (helper.AIState != 0)
+                        target = helper.lastEnemy;
+                    else
+                        target = tank.Vision.GetFirstVisibleTechIsEnemy(tank.Team);
+                }
                 else
                     target = tank.Vision.GetFirstVisibleTechIsEnemy(tank.Team);
             }

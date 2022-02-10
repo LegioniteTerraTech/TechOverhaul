@@ -45,6 +45,9 @@ namespace TweakTech
                 return true;
             }
         }
+
+
+
         [HarmonyPatch(typeof(TankBlock))]
         [HarmonyPatch("OnSpawn")]//
         private class FixRedError2
@@ -59,6 +62,21 @@ namespace TweakTech
             }
         }
 
+        [HarmonyPatch(typeof(Explosion))]
+        [HarmonyPatch("Explode")]//
+        private class UpdateExplosionASAP
+        {
+            private static void Prefix(Explosion __instance)
+            {
+                var SDT = __instance.GetComponent<SpecialDamageType>();
+                if (SDT)
+                {
+                    SDT.OverrideExplosion();
+                }
+            }
+        }
+
+        /*
         [HarmonyPatch(typeof(ShotgunRound))]
         [HarmonyPatch("Fire")]//
         private class AdjustDamageShotgun
@@ -70,7 +88,7 @@ namespace TweakTech
                     instModif = __instance.gameObject.AddComponent<ShotgunOverride>();
                 instModif.Fire(fireDirection, fireData, weapon, shooter, seekingRounds, replayRounds);
             }
-        }
+        }*/
 
 
         [HarmonyPatch(typeof(TargetAimer))]
@@ -142,6 +160,33 @@ namespace TweakTech
             }
         }
 
+        [HarmonyPatch(typeof(ModuleDetachableLink))]
+        [HarmonyPatch("DetachBlock")]//
+        private class ReturnBoltsOnFire
+        {   // Come on, detachable bolts should be reusable lol
+            private static void Prefix(ModuleDetachableLink __instance)
+            {
+                Tank tank = __instance.block.tank;
+                if (tank)
+                {
+                    bool isMerge = false;
+                    if (KickStart.FusionBlockAvail)
+                        isMerge = __instance.GetComponent<FusionBlock.Class1.ModuleFuseHalf>();
+                    if (isMerge || tank.Team != ManPlayer.inst.PlayerTeam)
+                        return;
+                    if (Singleton.Manager<ManPlayer>.inst.InventoryIsUnrestricted) { }
+                    else if (Singleton.Manager<ManGameMode>.inst.IsCurrentModeMultiplayer())
+                    {
+                        if (ManNetwork.IsHost)
+                            Singleton.Manager<NetInventory>.inst.HostAddItem(__instance.block.BlockType, 1);
+                    }
+                    else
+                        Singleton.Manager<SingleplayerInventory>.inst.HostAddItem(__instance.block.BlockType, 1);
+                }
+            }
+        }
+
+        
         
         [HarmonyPatch(typeof(Damageable))]
         [HarmonyPatch("TryToDamage")]//
@@ -149,35 +194,245 @@ namespace TweakTech
         {
             private static void Prefix(Damageable __instance, ref ManDamage.DamageInfo info, ref bool actuallyDealDamage)
             {
-                StatusCondition SC = __instance.GetComponent<StatusCondition>();
-                if (SC)
+                if (actuallyDealDamage)
                 {
-                    if (SC.Status == StatusType.Overheat)
-                    {
-                        if (__instance.MaxHealth > 0)
-                        info.ApplyDamageMultiplier(1 + (SC.impactValue / (__instance.MaxHealth * 2)));
-                    }
+                    info.ApplyDamageMultiplier(StatusCondition.RunStatusPre(__instance, info));
                 }
             }
+            /*
             private static void Postfix(Damageable __instance, ref ManDamage.DamageInfo info, ref bool actuallyDealDamage)
             {
                 if (actuallyDealDamage)
                 {
-                    StatusCondition SC;
-                    switch (info.DamageType)
+                    StatusCondition.RunStatusPost(__instance, info);
+                }
+            }*/
+        }
+
+        // ------------------------------------------------------
+        //                      MP Changes
+        // ------------------------------------------------------
+        [HarmonyPatch(typeof(Mode))]
+        [HarmonyPatch("EnterPreMode")]//On very late update
+        private static class Startup
+        {
+            private static void Prefix()
+            {
+                if (!DeathmatchExt.Ready)
+                {
+                    DeathmatchExt.SetReady();
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(MultiplayerTechSelectGroupAsset))]
+        [HarmonyPatch("GetTechPresets")]//
+        private class ChangeDeathmatchChoices
+        {
+            /*
+            static FieldInfo loadouts = typeof(ModePVP<>)
+                       .GetField("m_AvailableLoadouts", BindingFlags.NonPublic | BindingFlags.Instance);
+            */
+            private static void Postfix(MultiplayerTechSelectGroupAsset __instance, ref List<MultiplayerTechSelectPresetAsset> __result)
+            {
+                try
+                {
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Space))
                     {
-                        case ManDamage.DamageType.Fire:
-                            SC = StatusCondition.InitOrGet(__instance, StatusType.Overheat);
-                            if (SC)
-                            {
-                                SC.AddToVal(info.Damage);
-                            }
-                            return;
-                        case (ManDamage.DamageType)DamageTypesExt.Cyro:
-                            return;
-                        case (ManDamage.DamageType)DamageTypesExt.EMP:
-                            return;
+                        Debug.Log("Load DeathmatchExt 1: " + __result.Count());
                     }
+                    else
+                    {
+                        if (DeathmatchExt.Ready)
+                            __result = DeathmatchExt.MakeNewDeathmatchTechs(__result);
+                    }
+                }
+                catch (Exception e) { Debug.Log("TweakTech: OOOOOOOF " + e); }
+            }
+        }
+
+
+
+        // ------------------------------------------------------
+        //                      Game-Changers
+        // ------------------------------------------------------
+        [HarmonyPatch(typeof(TankBlock))]
+        [HarmonyPatch("InitNew")]//
+        private class ResetBlock
+        {
+            private static void Prefix(TankBlock __instance)
+            {
+                var Status = __instance.GetComponent<StatusCondition>();
+                if (Status)
+                {
+                    Status.OnRemove();
+                }
+            }
+        }
+        [HarmonyPatch(typeof(ModuleWeapon))]
+        [HarmonyPatch("Process")]//
+        private class MakeModuleWeaponAffectable
+        {
+            private static bool Prefix(ModuleWeapon __instance)
+            {
+                var Status = __instance.GetComponent<StatusCondition>();
+                if (Status)
+                {
+                    if (!Status.allowModuleUpdate)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(ModuleWheels))]
+        [HarmonyPatch("ControlInput")]//
+        private class MakeModuleWheelsAffectable
+        {
+            private static bool Prefix(ModuleWheels __instance, ref TankControl.ControlState drive)
+            {
+                var Status = __instance.GetComponent<StatusCondition>();
+                if (Status)
+                {
+                    TankControl.ControlState driveR;
+                    TankControl.State state;
+                    float drivePower;
+                    switch (Status.Status)
+                    {
+                        case StatusType.Freezing:
+                            float MaxSped = __instance.m_WheelParams.radius * __instance.m_TorqueParams.torqueCurveMaxRpm * 0.15f;
+                            float currentSpeed;
+                            if (__instance.block.tank?.rbody)
+                                currentSpeed = __instance.block.tank.rbody.velocity.magnitude;
+                            else
+                                currentSpeed = 0;
+                            if (MaxSped < 1)
+                                MaxSped = 4;
+                            float maximalOut = Mathf.Max(-1, (MaxSped * (Status.GetOpPercent() + 0.2f)) - currentSpeed) / MaxSped;
+
+                            if (currentSpeed > 4)
+                                drivePower = Mathf.Min(1, maximalOut);
+                            else
+                                drivePower = 1;
+                            state = new TankControl.State();
+                            state.m_InputMovement = drive.InputMovement * drivePower;
+                            state.m_InputRotation = drive.InputRotation * drivePower;
+                            driveR = new TankControl.ControlState();
+                            driveR.m_State = state;
+                            drive = driveR;
+                            break;
+                        case StatusType.EMF:
+                            drivePower = Status.GetOpPercent();
+                            state = new TankControl.State();
+                            state.m_InputMovement = drive.InputMovement * drivePower;
+                            state.m_InputRotation = drive.InputRotation * drivePower;
+                            driveR = new TankControl.ControlState();
+                            driveR.m_State = state;
+                            drive = driveR;
+                            break;
+                    }
+                }
+                return true;
+            }
+
+            [HarmonyPatch(typeof(ModuleBooster))]
+            [HarmonyPatch("DriveControlInput")]//
+            private class MakeBoostersAffectable
+            {
+                private static bool Prefix(ModuleBooster __instance, ref TankControl.ControlState driveData)
+                {
+                    var Status = __instance.GetComponent<StatusCondition>();
+                    if (Status)
+                    {
+                        TankControl.ControlState driveR;
+                        TankControl.State state;
+                        float drivePower;
+                        switch (Status.Status)
+                        {
+                            case StatusType.Freezing:
+                            case StatusType.EMF:
+                                drivePower = Status.GetOpPercent();
+                                state = new TankControl.State();
+                                state.m_BoostJets =  driveData.BoostJets ? Status.allowModuleUpdate : false;
+                                state.m_BoostProps = driveData.BoostProps ? Status.allowModuleUpdate : false;
+                                state.m_InputMovement = driveData.InputMovement * drivePower;
+                                state.m_InputRotation = driveData.InputRotation * drivePower;
+                                driveR = new TankControl.ControlState();
+                                driveR.m_State = state;
+                                driveData = driveR;
+                                break;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            [HarmonyPatch(typeof(ModuleLinearMotionEngine))]
+            [HarmonyPatch("OnDriveControl")]//
+            private class MakeLMEAffectable
+            {
+                private static bool Prefix(ModuleLinearMotionEngine __instance, ref TankControl.ControlState driveData)
+                {
+                    var Status = __instance.GetComponent<StatusCondition>();
+                    if (Status)
+                    {
+                        TankControl.ControlState driveR;
+                        TankControl.State state;
+                        float drivePower;
+                        switch (Status.Status)
+                        {
+                            case StatusType.Freezing:
+                            case StatusType.EMF:
+                                drivePower = Status.GetOpPercent();
+                                state = new TankControl.State();
+                                state.m_BoostJets = driveData.BoostJets ? Status.allowModuleUpdate : false;
+                                state.m_BoostProps = driveData.BoostProps ? Status.allowModuleUpdate : false;
+                                state.m_InputMovement = driveData.InputMovement * drivePower;
+                                state.m_InputRotation = driveData.InputRotation * drivePower;
+                                driveR = new TankControl.ControlState();
+                                driveR.m_State = state;
+                                driveData = driveR;
+                                break;
+                        }
+                    }
+                    return true;
+                }
+            }
+
+            [HarmonyPatch(typeof(ModuleHover))]
+            [HarmonyPatch("DriveControlInput")]//
+            private class MakeHoversAffectable
+            {
+                private static bool Prefix(ModuleHover __instance, ref TankControl.ControlState controlState)
+                {
+                    var Status = __instance.GetComponent<StatusCondition>();
+                    if (Status)
+                    {
+                        TankControl.ControlState driveR;
+                        TankControl.State state;
+                        float drivePower;
+                        switch (Status.Status)
+                        {
+                            case StatusType.Freezing:
+                                drivePower = Status.GetOpPercent();
+                                state = new TankControl.State();
+                                state.m_InputMovement = controlState.InputMovement * drivePower;
+                                state.m_InputRotation = controlState.InputRotation * drivePower;
+                                driveR = new TankControl.ControlState();
+                                driveR.m_State = state;
+                                controlState = driveR;
+                                break;
+                            case StatusType.EMF:
+                                foreach (HoverJet hj in __instance.GetComponentsInChildren<HoverJet>())
+                                {
+                                    hj.OnControlInput(controlState, 0);
+                                }
+                                return false;
+                        }
+                    }
+                    return true;
                 }
             }
         }

@@ -17,8 +17,11 @@ namespace TweakTech
 		Cutting,
 		Plasma,
 		//(NEW)
-	    Cyro,       
-	    EMP,         
+	    Cryo,       
+	    EMP,
+		Scramble,
+		Hack,
+		Acid,
 	}
 	/* OG
 	 * Standard,    - meh jack of all trades
@@ -30,7 +33,7 @@ namespace TweakTech
 	 * Cutting,     - Melee Light Tech punisher
 	 * Plasma,      - Slow Tech punisher
 	 * (NEW)
-	 * Cyro,        - Same as Energy
+	 * Cryo,        - Same as Energy
 	 * EMP,         - Specialized shield destroyer
 	 * 
 	 * CHANGES
@@ -43,7 +46,9 @@ namespace TweakTech
 	 * Cutting,     - Tanky Tech punisher       (Weakens block fragilities)     [SOLID RED OUTLINE]
 	 * Plasma,      - Super Tech Punisher       (Damage dealt by PERCENT)
 	 * (NEW)
-	 * Cyro,        - Fast Tech punisher        (Slows hit blocks up to 50%)    [SOLID BLUE OUTLINE]
+	 * Cryo,        - Fast Tech punisher        (Slows hit blocks up to 50%)    [SOLID BLUE OUTLINE]
 	 * EMP,         - Heavy Shield Spam Counter (Disables at half BLOCK health) [FLASHING YELLOW OUTLINE]
+	 * Scramble,	- SuperHeavy Weapon Counter (Only the first strike is really powerful, but enough to mess over high-end weapons) [Flashing White]
+	 * Hack,		- Block detachment method   (Only works against blocks with modules in them) [DARK GREEN]
 	 */
 }

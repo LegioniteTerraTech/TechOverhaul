@@ -10,7 +10,7 @@ namespace TweakTech
     {
         internal float Multiplier = 1;
 
-        internal ManDamage.DamageType Dealer = ManDamage.DamageType.Standard;
+        internal DamageTypesExt Dealer = DamageTypesExt.Standard;
         internal ManDamage.DamageableType Taker = ManDamage.DamageableType.Standard;
         // Can add new DamageTypes but not DamageableTypes
         //   DamageableTypes are handled by their own respective "ModuleReinforced"

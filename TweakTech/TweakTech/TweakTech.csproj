@@ -47,6 +47,14 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="BlockInjector">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\Nuterra.BlockInjector\BlockInjector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Fusion Block">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\Fusion Block\Fusion Block.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="RandomAdditions">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\RandomAdditions\RandomAdditions.dll</HintPath>
       <Private>False</Private>
@@ -71,29 +79,43 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.Networking">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.Networking.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BlockTweak.cs" />
+    <Compile Include="DeathmatchPrefabs.cs" />
+    <Compile Include="GeneralTweaks\BlockTweak.cs" />
     <Compile Include="ChangePatcher.cs" />
-    <Compile Include="DamageTypesExt.cs" />
-    <Compile Include="DamageTweak.cs" />
-    <Compile Include="EnemyRaidDispatcher.cs" />
+    <Compile Include="NewMechanics\DamageTypesExt.cs" />
+    <Compile Include="GeneralTweaks\DamageTweak.cs" />
     <Compile Include="KickStart.cs" />
+    <Compile Include="DeathmatchExt.cs" />
+    <Compile Include="RawTechLoaderLite.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReAimer.cs" />
-    <Compile Include="ShotgunOverride.cs" />
-    <Compile Include="StatusCondition.cs" />
-    <Compile Include="Tweaks.cs" />
+    <Compile Include="NewMechanics\ReAimer.cs" />
+    <Compile Include="NewMechanics\SpecialDamageType.cs" />
+    <Compile Include="NewMechanics\StatusCondition.cs" />
+    <Compile Include="GeneralTweaks\Tweaks.cs" />
+    <Compile Include="GeneralTweaks\WeaponTweak.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mod.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MPTweaks\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

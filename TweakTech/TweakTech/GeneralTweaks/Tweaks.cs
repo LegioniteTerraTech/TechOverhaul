@@ -564,7 +564,150 @@ namespace TweakTech
         };
 
         internal static List<DamageTweak> DMGTweaks = new List<DamageTweak>(){
-            //new DamageTweak { },
+            // Cryogenic
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Standard,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Armour,
+            },
+            new DamageTweak {
+                Multiplier = 0.25f,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Rock,
+            },
+            new DamageTweak {
+                Multiplier = 0.5f,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Rubber,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Shield,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Volatile,
+            },
+            new DamageTweak {
+                Multiplier = 1.5f,
+                Dealer = DamageTypesExt.Cryo,
+                Taker = ManDamage.DamageableType.Wood,
+            },
+            // EMP
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Standard,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Armour,
+            },
+            new DamageTweak {
+                Multiplier = 0.1f, // Strong resistance
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Rock,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Rubber,
+            },
+            new DamageTweak {
+                Multiplier = 4,
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Shield,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Volatile,
+            },
+            new DamageTweak {
+                Multiplier = 0, // Can't zap wood
+                Dealer = DamageTypesExt.EMP,
+                Taker = ManDamage.DamageableType.Wood,
+            },
+            // Scramble
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Standard,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Armour,
+            },
+            new DamageTweak {
+                Multiplier = 0.1f, // Strong resistance
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Rock,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Rubber,
+            },
+            new DamageTweak {
+                Multiplier = 4,
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Shield,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Volatile,
+            },
+            new DamageTweak {
+                Multiplier = 0, // Can't zap wood
+                Dealer = DamageTypesExt.Scramble,
+                Taker = ManDamage.DamageableType.Wood,
+            },
+            // Acid
+            new DamageTweak {
+                Multiplier = 0.5f,
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Standard,
+            },
+            new DamageTweak {
+                Multiplier = 0.5f,
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Armour,
+            },
+            new DamageTweak {
+                Multiplier = 0.25f, // Strong resistance
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Rock,
+            },
+            new DamageTweak {
+                Multiplier = 0.75f,
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Rubber,
+            },
+            new DamageTweak {
+                Multiplier = 0.25f,
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Shield,
+            },
+            new DamageTweak {
+                Multiplier = 1,
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Volatile,
+            },
+            new DamageTweak {
+                Multiplier = 1.25f,
+                Dealer = DamageTypesExt.Acid,
+                Taker = ManDamage.DamageableType.Wood,
+            },
 
         };
 

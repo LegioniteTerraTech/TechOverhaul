@@ -28,7 +28,7 @@ namespace TweakTech
 
         public static bool worked = false;
         internal static int timesFired = 0;
-        private static int AdditionalDamageTypes = 2;
+        private static int AdditionalDamageTypes = 5;
 
 
         internal static void ApplyTweaks()
@@ -53,6 +53,8 @@ namespace TweakTech
             ApplyFireRateBlockTweaks();
             BTBookmark.startWorking = true;
             FDBookmark.startWorking = true;
+            if (!KickStart.EnableThis)
+                FDBookmark.DisableAll();
         }
 
         internal static FieldInfo deals = typeof(Projectile).GetField("m_Damage", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -70,7 +72,7 @@ namespace TweakTech
                 Transform trans = bloc.transform;
                 try
                 {
-
+                    /*
                     if (Singleton.Manager<ManSpawn>.inst.GetCorporation(BT) == FactionSubTypes.GC)
                     {
                         var dmg = trans.GetComponent<Damageable>();
@@ -87,7 +89,7 @@ namespace TweakTech
                                 }
                             }
                         }
-                    }
+                    }*/
 
                     if (bloc.GetComponent<ModuleItemProducer>())
                     {   // no weak autominers
@@ -95,12 +97,13 @@ namespace TweakTech
                         if ((bool)dmg)
                             dmg.m_DamageDetachFragility = 0;
                     }
+                    /*
                     if (bloc.GetComponent<FireDataShotgun>())
                     {   // Shotguns ignore shields
                         var FD = trans.GetComponent<FireData>();
                         if ((bool)FD)
                             FD.m_BulletPrefab.gameObject.AddComponent<ShotgunOverride>();
-                    }
+                    }*/
 
                     count++;
                 }
@@ -132,7 +135,8 @@ namespace TweakTech
             timesFired = 0;
         }
 
-        internal static void ApplyFireRateBlockTweak(TankBlock bloc, BlockTypes BT, bool useOG = true)
+        // Changing
+        private static void ApplyFireRateBlockTweak(TankBlock bloc, BlockTypes BT, bool useOG = true)
         {
             Transform trans = bloc.transform;
             try
@@ -295,7 +299,7 @@ namespace TweakTech
             }
             return "";
         }
-        internal static void ApplyFireRateBlockTweakPRESENT(BlockTypes BT, WeaponRound WR)
+        internal static void CopyFireRateBlockTweakToPRESENT(BlockTypes BT, WeaponRound WR)
         {
             TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
             Transform trans = bloc.transform;
@@ -343,11 +347,11 @@ namespace TweakTech
                                     {
                                         retrofit.m_MaxDamageStrength = REFSplode.m_MaxDamageStrength;
                                         retrofit.m_MaxImpulseStrength = REFSplode.m_MaxImpulseStrength;
-                                        //Debug.Log("TweakTech: ApplyFireRateBlockTweakPRESENT - Block " + BT.ToString() + " explosion is now " + retrofit.m_MaxDamageStrength);
+                                        //Debug.Log("TweakTech: CopyFireRateBlockTweakToPRESENT - Block " + BT.ToString() + " explosion is now " + retrofit.m_MaxDamageStrength);
                                     }
                                     int newDamageDirect = (int)WeaponTweak.deals.GetValue(WRREF);
-                                    //Debug.Log("TweakTech: ApplyFireRateBlockTweakPRESENT - Block " + BT.ToString() + " direct is now " + newDamageDirect);
-                                    //Debug.Log("TweakTech: ApplyFireRateBlockTweakPRESENT - Block " + BT.ToString() + " stored in " + WR.name);
+                                    //Debug.Log("TweakTech: CopyFireRateBlockTweakToPRESENT - Block " + BT.ToString() + " direct is now " + newDamageDirect);
+                                    //Debug.Log("TweakTech: CopyFireRateBlockTweakToPRESENT - Block " + BT.ToString() + " stored in " + WR.name);
                                     deals.SetValue(Proj, newDamageDirect);
 
                                     timesFired++;
@@ -361,12 +365,141 @@ namespace TweakTech
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: ApplyFireRateBlockTweakPRESENT - error on " + BT.ToString() + " " + e);
+                Debug.Log("TweakTech: CopyFireRateBlockTweakToPRESENT - error on " + BT.ToString() + " " + e);
             }
         }
 
-        private static void ApplyBlockTweaks()
+        // Returning
+        internal static string ResetBlockTweakActive(BlockTypes BT, BlockTweak BTW)
         {
+            TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
+            Transform trans = bloc.transform;
+            try
+            {
+                var MW = bloc.GetComponent<ModuleWeapon>();
+                if ((bool)MW)
+                {   // reduce firerates
+                    var MWG = bloc.GetComponent<ModuleWeaponGun>();
+                    if ((bool)MWG)
+                    {
+                        var FD = trans.GetComponent<FireData>();
+                        if ((bool)FD)
+                        {
+                            var WR = WeaponTweak.GetOrSetBPrefab(bloc, BT);
+                            if ((bool)WR)
+                            {   // RESET
+                                var WROG = FD.m_BulletPrefab;
+                                var ProjOG = FD.m_BulletPrefab.GetComponent<Projectile>();
+                                var Proj = WR.GetComponent<Projectile>();
+                                if ((bool)Proj && (bool)ProjOG)
+                                {
+                                    Explosion OGSplode = null;
+                                    Explosion retrofit = null;
+                                    try
+                                    {
+                                        var trans2 = (Transform)WeaponTweak.explode.GetValue(ProjOG);
+                                        OGSplode = trans2.GetComponent<Explosion>();
+                                        var trans3 = WeaponTweak.GetOrSetEPrefab(bloc, BT);
+                                        retrofit = trans3.GetComponent<Explosion>();
+                                        if ((bool)OGSplode && (bool)retrofit)
+                                        {
+                                            retrofit.m_MaxDamageStrength = OGSplode.m_MaxDamageStrength;
+                                            retrofit.m_MaxImpulseStrength = OGSplode.m_MaxImpulseStrength;
+                                        }
+                                    }
+                                    catch { }
+                                    WeaponTweak.deals.SetValue(WR, (int)WeaponTweak.deals.GetValue(WROG));
+                                    
+                                    if (BTW != null)
+                                        BTW.ResetApplyToBlock();
+
+
+                                    deals.SetValue(Proj, (int)WeaponTweak.deals.GetValue(WR));
+                                    WeaponTweak.SetBPrefab(BT, WR);
+
+                                    timesFired++;
+                                    return WR.name;
+                                    //if (!bloc.GetComponent<FDBookmark>())
+                                    //    bloc.gameObject.AddComponent<FDBookmark>().Main = WR;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("TweakTech: ApplyFireRateBlockTweaks - error on " + BT.ToString() + " " + e);
+            }
+            return "";
+        }
+        internal static void ResetFireRateBlockTweakToPRESENT(BlockTypes BT, WeaponRound WR)
+        {
+            TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
+            Transform trans = bloc.transform;
+            try
+            {
+                var MW = bloc.GetComponent<ModuleWeapon>();
+                if ((bool)MW)
+                {   // reduce firerates
+                    var MWG = bloc.GetComponent<ModuleWeaponGun>();
+                    if ((bool)MWG)
+                    {
+                        var FD = trans.GetComponent<FireData>();
+                        if ((bool)FD)
+                        {
+                            if ((bool)WR)
+                            {
+                                var WROG = FD.m_BulletPrefab;
+                                if (WROG == WR)
+                                    return;
+                                var ProjREF = WROG.GetComponent<Projectile>();
+                                var Proj = WR.GetComponent<Projectile>();
+                                if ((bool)Proj && (bool)ProjREF)
+                                {
+                                    bool exploGet = false;
+                                    Explosion REFSplode = null;
+                                    Explosion retrofit = null;
+                                    try
+                                    {
+                                        var trans2 = (Transform)WeaponTweak.explode.GetValue(ProjREF);
+                                        REFSplode = trans2.GetComponent<Explosion>();
+                                        var trans3 = WeaponTweak.GetOrSetEPrefab(bloc, BT);
+                                        retrofit = trans3.GetComponent<Explosion>();
+                                        if ((bool)REFSplode && (bool)retrofit)
+                                        {
+                                            exploGet = true;
+                                        }
+                                    }
+                                    catch { }
+
+
+                                    if (exploGet)
+                                    {
+                                        retrofit.m_MaxDamageStrength = REFSplode.m_MaxDamageStrength;
+                                        retrofit.m_MaxImpulseStrength = REFSplode.m_MaxImpulseStrength;
+                                    }
+                                    int newDamageDirect = (int)WeaponTweak.deals.GetValue(WROG);
+                                    deals.SetValue(Proj, newDamageDirect);
+
+                                    timesFired++;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("TweakTech: CopyFireRateBlockTweakToPRESENT - error on " + BT.ToString() + " " + e);
+            }
+        }
+
+        private static bool appliedTweaks = false;
+        internal static void ApplyBlockTweaks()
+        {
+            if (appliedTweaks)
+                return;
             Debug.Log("TweakTech: ApplyBlockTweaks - Initializing");
             foreach (BlockTweak BT in Tweaks.BlockTweaks)
             {
@@ -380,6 +513,26 @@ namespace TweakTech
                 }
             }
             Debug.Log("TweakTech: ApplyBlockTweaks - Done building");
+            appliedTweaks = true;
+        }
+        internal static void RemoveBlockTweaks()
+        {
+            if (!appliedTweaks)
+                return;
+            Debug.Log("TweakTech: RemoveBlockTweaks - Initializing");
+            foreach (BlockTweak BT in Tweaks.BlockTweaks)
+            {
+                try
+                {
+                    BT.ResetApplyToBlock();
+                }
+                catch
+                {
+                    Debug.Log("TweakTech: RemoveBlockTweaks - error");
+                }
+            }
+            Debug.Log("TweakTech: RemoveBlockTweaks - Done building");
+            appliedTweaks = false;
         }
 
         private static FieldInfo damageChart = typeof(ManDamage).GetField("m_DamageMultiplierTable", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -438,6 +591,7 @@ namespace TweakTech
         static FieldInfo FDaG = typeof(ModuleWeaponGun).GetField("m_FiringData", BindingFlags.NonPublic | BindingFlags.Instance);
         public static void EnableAll()
         {
+            ChangePatcher.ApplyBlockTweaks();
             reformatted = new List<BlockTypes>();
             List<int> names = new List<int>();
             foreach (FDBookmark FDB in Resources.FindObjectsOfTypeAll<FDBookmark>())
@@ -477,15 +631,67 @@ namespace TweakTech
                     if (names.Contains(hash))
                     {
                         BlockTypes BT2 = reformatted[names.IndexOf(hash)];
-                        ChangePatcher.ApplyFireRateBlockTweakPRESENT(BT2, WR2);
+                        ChangePatcher.CopyFireRateBlockTweakToPRESENT(BT2, WR2);
                     }
                 }
                 catch { }
             }
-            Debug.Log("TweakTech: ApplyFireRateBlockTweakPRESENT - changed " + ChangePatcher.timesFired);
+            Debug.Log("TweakTech: CopyFireRateBlockTweakToPRESENT - changed " + ChangePatcher.timesFired);
             ChangePatcher.timesFired = 0;
             reformatted = null;
         }
+        public static void DisableAll()
+        {
+            ChangePatcher.RemoveBlockTweaks();
+            reformatted = new List<BlockTypes>();
+            List<int> names = new List<int>();
+            foreach (FDBookmark FDB in Resources.FindObjectsOfTypeAll<FDBookmark>())
+            {
+                try
+                {
+                    TankBlock Block = FDB.GetComponent<TankBlock>();
+                    TankBlock blockF = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
+                    FDB.Block = Block;
+                    if (!reformatted.Contains(Block.BlockType))
+                    {
+                        var BT = Tweaks.BlockTweaks.Find(delegate (BlockTweak cand) { return cand.Type == Block.BlockType; });
+                        if (BT != null)
+                        {
+                            names.Add(ChangePatcher.ResetBlockTweakActive(Block.BlockType, BT).GetHashCode());
+                        }
+                        else
+                            names.Add(ChangePatcher.ResetBlockTweakActive(Block.BlockType, null).GetHashCode());
+                        reformatted.Add(Block.BlockType);
+
+                    }
+                    if (Block != blockF)
+                    {
+                        FDB.DoReset = true;
+                        FDB.ResetChanges(blockF);
+                    }
+                }
+                catch { }
+            }
+            Debug.Log("TweakTech: ResetBlockTweakActive - changed " + ChangePatcher.timesFired);
+            ChangePatcher.timesFired = 0;
+            foreach (WeaponRound WR2 in Resources.FindObjectsOfTypeAll<WeaponRound>())
+            {
+                try
+                {
+                    int hash = WR2.name.GetHashCode();
+                    if (names.Contains(hash))
+                    {
+                        BlockTypes BT2 = reformatted[names.IndexOf(hash)];
+                        ChangePatcher.ResetFireRateBlockTweakToPRESENT(BT2, WR2);
+                    }
+                }
+                catch { }
+            }
+            Debug.Log("TweakTech: ResetFireRateBlockTweakToPRESENT - changed " + ChangePatcher.timesFired);
+            ChangePatcher.timesFired = 0;
+            reformatted = null;
+        }
+
         public void Update()
         {
             if (delay <= 0)
@@ -592,6 +798,56 @@ namespace TweakTech
                         MWG.m_BurstCooldown *= adjust;
                         MW.m_ShotCooldown *= adjust;
 
+                    }
+                }
+            }
+            enabled = false;
+        }
+        public void ResetChanges(TankBlock blockF)
+        {
+            var FD = blockF.GetComponent<FDBookmark>();
+            if (Block == blockF)
+            {
+                //Debug.Log("TweakTech: FDBookmark - First call for block " + Block.name);
+            }
+            else
+            {
+                Block = GetComponent<TankBlock>();
+                //Debug.Log("TweakTech: FDBookmark - Tweaked block " + Block.name);
+                var MWG = Block.GetComponent<ModuleWeaponGun>();
+                MWG.GetVelocity();
+                try
+                {
+                    var FDa = (FireData)FDaG.GetValue(MWG);
+                    FDa.m_BulletPrefab = blockF.GetComponent<FireData>().m_BulletPrefab;
+                    Debug.Log("TweakTech: FDBookmark - Reset " + Block.name + " projectile to " + FDa.m_BulletPrefab.name);
+                }
+                catch
+                {
+                    Debug.Log("TweakTech: FDBookmark - FIREDATA IS ILLEGALLY NULL " + Block.name);
+                }
+
+                //Debug.Log("TweakTech: FDBookmark - 1");
+                var MWOG = blockF.GetComponent<ModuleWeapon>();
+                var MW = Block.GetComponent<ModuleWeapon>();
+                var MWGOG = blockF.GetComponent<ModuleWeaponGun>();
+                if ((bool)MW && (bool)MWOG)
+                {   // reduce firerates
+                    if ((bool)MWG && (bool)MWGOG)
+                    {
+                        MWG.m_ShotCooldown = MWGOG.m_ShotCooldown;
+                        MWG.m_BurstCooldown = MWGOG.m_BurstCooldown;
+                        MW.m_ShotCooldown = MWOG.m_ShotCooldown;
+
+                        if (DoReset)
+                        {
+                            var BT = Tweaks.BlockTweaks.Find(delegate (BlockTweak cand) { return cand.Type == Block.BlockType; });
+                            if (BT != null)
+                            {
+                                BT.ResetBlock(Block);
+                            }
+                        }
+                        DoReset = false;
                     }
                 }
             }
