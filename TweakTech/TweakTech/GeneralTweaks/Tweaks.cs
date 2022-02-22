@@ -860,9 +860,8 @@ namespace TweakTech
                             Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 4");
                             lifeTime.SetValue(proj, val);
                             Debug.Log("TweakTech: MultiStageWeapon - " + TB.name + "  | Part 5");
-                            explode.SetValue(proj, null);
-                            //DisableExplode(GO.GetComponent<Projectile>());
-                            Debug.Log("TweakTech: MultiStageWeapon - There is an explosion in " + TB.name + "  | " + (bool)((Transform)explode.GetValue(proj)));
+                            explode.SetValue(BP.GetComponent<Projectile>(), null);
+                            Debug.Log("TweakTech: MultiStageWeapon - There is an explosion in " + TB.name + "  | " + (bool)((Transform)explode.GetValue(BP.GetComponent<Projectile>())));
 
                             worked = true;
                         }

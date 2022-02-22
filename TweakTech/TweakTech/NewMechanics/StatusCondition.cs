@@ -305,6 +305,8 @@ namespace TweakTech
         // On receiving damage
         public static float RunStatusPre(Damageable dmg, ManDamage.DamageInfo info)
         {
+            if (dmg.Invulnerable)
+                return 0;
             StatusCondition SC = dmg.Block?.GetComponent<StatusCondition>();
             if (IsSameTeam(dmg, info))
             {
@@ -825,7 +827,7 @@ namespace TweakTech
         public void Remove()
         {
             impactValue = 0;
-            Debug.Log("TweakTech: StatusCondition - Remove");
+            //Debug.Log("TweakTech: StatusCondition - Remove");
             swap.enabled = true;
             swap.SwapMaterialDamage(false);
             swap.SwapMaterialTime(ManTimeOfDay.inst.NightTime);

@@ -7,6 +7,9 @@ using System.Reflection;
 
 namespace TweakTech
 {
+    /// <summary>
+    /// Note: this is automatically disabled when WeaponAimMod is installed as that has better target leading
+    /// </summary>
     public class ReAimer : MonoBehaviour
     {
         private TankBlock block;
