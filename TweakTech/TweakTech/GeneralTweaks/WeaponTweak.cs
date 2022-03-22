@@ -37,18 +37,30 @@ namespace TweakTech
         /// <param name="PrefabSet"></param>
         internal void ChangeWeapon(TankBlock block)
         {
-            if (ProjSpeedChange != ProjSpeedChange.Default)
-                ChangeProjectileSpeed(block);
-            if (OverrideTraverse != 0)
-                OverrideTurretTraverse(block);
-            if (OverrideBurstCooldown > 0 || OverrideBurstCount >= 0 || OverrideCooldown > 0)
-                OverrideCooldowns(block);
-            if (ChangeSeeking == 0)
-                if (block.GetComponent<ModuleWeaponGun>())
-                    block.GetComponent<ModuleWeaponGun>().m_SeekingRounds = false;
-            if (ChangeSeeking == 1)
-                if (block.GetComponent<ModuleWeaponGun>())
-                    block.GetComponent<ModuleWeaponGun>().m_SeekingRounds = true;
+            int stepError = 0;
+            try
+            {
+                if (ProjSpeedChange != ProjSpeedChange.Default)
+                    ChangeProjectileSpeed(block);
+                stepError++;
+                if (OverrideTraverse != 0)
+                    OverrideTurretTraverse(block);
+                stepError++;
+                if (OverrideBurstCooldown > 0 || OverrideBurstCount >= 0 || OverrideCooldown > 0)
+                    OverrideCooldowns(block);
+                stepError++;
+                if (ChangeSeeking == 0)
+                    if (block.GetComponent<ModuleWeaponGun>())
+                        block.GetComponent<ModuleWeaponGun>().m_SeekingRounds = false;
+                stepError++;
+                if (ChangeSeeking == 1)
+                    if (block.GetComponent<ModuleWeaponGun>())
+                        block.GetComponent<ModuleWeaponGun>().m_SeekingRounds = true;
+            }
+            catch (Exception e)
+            {
+                Debug.Log("TweakTech: WeaponTweak.ChangeWeapon - error " + stepError + " " + e);
+            }
 
         }
         internal void ResetWeapon(TankBlock block, TankBlock refBlock)
@@ -62,7 +74,7 @@ namespace TweakTech
                 if ((bool)FD && (bool)FDOG)
                 {
                     FD.m_MuzzleVelocity = FDOG.m_MuzzleVelocity;
-                    block.GetComponent<ReAimer>().GravSpeedModifier = 1;
+                    ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = 1;
                 }
                 else
                 {
@@ -71,7 +83,7 @@ namespace TweakTech
             }
             if (OverrideTraverse != 0)
             {
-                if ((bool)MW)
+                if ((bool)MW && (bool)OGMW)
                 {
                     MW.m_RotateSpeed = OGMW.m_RotateSpeed;
                     //Debug.Log("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
@@ -85,14 +97,15 @@ namespace TweakTech
             {
                 var MWG = block.GetComponent<ModuleWeaponGun>();
                 var OGMWG = refBlock.GetComponent<ModuleWeaponGun>();
-                if ((bool)MW)
+                if ((bool)MW && (bool)OGMW)
                 {
                     MW.m_ShotCooldown = OGMW.m_ShotCooldown;
-                    if ((bool)MWG)
+                    if ((bool)MWG && (bool)OGMWG)
                     {
                         MWG.m_ShotCooldown = OGMWG.m_ShotCooldown;
                         MWG.m_BurstCooldown = OGMWG.m_BurstCooldown;
                         MWG.m_BurstShotCount = OGMWG.m_BurstShotCount;
+                        MWG.m_SeekingRounds = OGMWG.m_SeekingRounds;
                     }
                 }
                 else
@@ -100,14 +113,10 @@ namespace TweakTech
                     Debug.Log("TweakTech: ResetWeapon - Found no ModuleWeapon in " + block.name + " to change");
                 }
             }
-            block.GetComponent<ModuleWeaponGun>().m_SeekingRounds = refBlock.GetComponent<ModuleWeaponGun>();
         }
         /// <summary>
-        /// Setup
+        /// Setup only, does not change values
         /// </summary>
-        /// <param name="block"></param>
-        /// <param name="PrefabSet"></param>
-        /// <param name="Override"></param>
         internal void ChangeWeapon(TankBlock block, BlockTypes Override)
         {
             if (ProjSpeedChange != ProjSpeedChange.Default)
@@ -117,13 +126,16 @@ namespace TweakTech
                 var FD = block.GetComponent<FireData>();
                 if ((bool)FD)
                 {
-                    WeaponRound BP = GetOrSetBPrefab(block, Override);
-                    if ((bool)BP)
+                    if (FD.m_BulletPrefab)
                     {
-                        if (DirectDamageMulti != -1)
-                            ApplyDirectDamageChange(BP, Override);
-                        if (EditExplosion)
-                            ApplyExplodeChange(block, Override);
+                        WeaponRound BP = GetOrSetBPrefab(block, Override);
+                        if ((bool)BP)
+                        {
+                            if (DirectDamageMulti != -1)
+                                ApplyDirectDamageChange(BP, Override);
+                            if (EditExplosion)
+                                ApplyExplodeChange(block, Override);
+                        }
                     }
                 }
             }
@@ -142,10 +154,7 @@ namespace TweakTech
                 {
                     if (!KickStart.RandomAdditionsAvail)
                         return;
-                    if (block.GetComponent<ReAimer>())
-                        block.GetComponent<ReAimer>().GravSpeedModifier = 1;
-                    else
-                        block.gameObject.AddComponent<ReAimer>().GravSpeedModifier = 1;
+                    ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = 1;
                 }
                 else
                 {
@@ -201,7 +210,7 @@ namespace TweakTech
             if ((bool)MW)
             {
                 MW.m_RotateSpeed = OverrideTraverse;
-                //Debug.Log("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
+                Debug.Log("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
             }
             else
             {
@@ -249,18 +258,12 @@ namespace TweakTech
                         return;
                     case ProjSpeedChange.Slow:
                         FD.m_MuzzleVelocity = FDOG.m_MuzzleVelocity * ProjSpeedChangeMulti;
-                        if (block.GetComponent<ReAimer>())
-                            block.GetComponent<ReAimer>().GravSpeedModifier = ProjSpeedChangeMulti;
-                        else
-                            block.gameObject.AddComponent<ReAimer>().GravSpeedModifier = ProjSpeedChangeMulti;
+                        ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ProjSpeedChangeMulti;
                         return;
                     case ProjSpeedChange.SlowedFast:
                         FD.m_MuzzleVelocity = FDOG.m_MuzzleVelocity * ProjSpeedChangeMulti;
                         FD.m_MuzzleVelocity *= ChangePatcher.HighExplosiveSpeedMulti;
-                        if (block.GetComponent<ReAimer>())
-                            block.GetComponent<ReAimer>().GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
-                        else
-                            block.gameObject.AddComponent<ReAimer>().GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
+                        ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
                         return;
                 }
             }
@@ -269,6 +272,9 @@ namespace TweakTech
                 Debug.Log("TweakTech: ChangeProjectileSpeed - Found no FireData in " + block.name + " to change");
             }
         }
+        /// <summary>
+        /// Setup only, does not change values
+        /// </summary>
         private void ChangeProjectileSpeed(TankBlock block, BlockTypes Override)
         {
             var FD = block.GetComponent<FireData>();
@@ -279,29 +285,27 @@ namespace TweakTech
                 switch (ProjSpeedChange)
                 {
                     case ProjSpeedChange.Slow:
-                        if (!KickStart.RandomAdditionsAvail)
-                            return;
-                        if (!(bool)WProj)
+                        if (KickStart.RandomAdditionsAvail)
                         {
-                            WProj = BP.gameObject.AddComponent<WeightedProjectile>();
-                            //Debug.Log("TweakTech: ChangeProjectileSpeed - Added WeightedProjectile to " + block.name);
+                            if (!(bool)WProj)
+                            {
+                                WProj = BP.gameObject.AddComponent<WeightedProjectile>();
+                                //Debug.Log("TweakTech: ChangeProjectileSpeed - Added WeightedProjectile to " + block.name);
+                            }
+                            WProj.CustomGravity = true;
+                            WProj.CustomGravityFractionSpeed = false;
+                            WProj.ProjectileMass = 0.00123f;
+                            //FD.m_MuzzleVelocity *= ProjSpeedChangeMulti;
+                            WProj.GravityAndSpeedScale = ProjSpeedChangeMulti;
+                            ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ProjSpeedChangeMulti;
+                            if ((bool)BP)
+                            {
+                                var Proj = BP.GetComponent<Projectile>();
+                                if ((bool)Proj)
+                                    lifeTime.SetValue(Proj, (float)lifeTime.GetValue(Proj) / ProjSpeedChangeMulti);
+                            }
+                            //Debug.Log("TweakTech: AddSlowProjectile - Could not fetch ReAimer in " + block.name + " to change");
                         }
-                        WProj.CustomGravity = true;
-                        WProj.CustomGravityFractionSpeed = false;
-                        WProj.ProjectileMass = 0.00123f;
-                        //FD.m_MuzzleVelocity *= ProjSpeedChangeMulti;
-                        WProj.GravityAndSpeedScale = ProjSpeedChangeMulti;
-                        if (block.GetComponent<ReAimer>())
-                            block.GetComponent<ReAimer>().GravSpeedModifier = ProjSpeedChangeMulti;
-                        else
-                            block.gameObject.AddComponent<ReAimer>().GravSpeedModifier = ProjSpeedChangeMulti;
-                        if ((bool)BP)
-                        {
-                            var Proj = BP.GetComponent<Projectile>();
-                            if ((bool)Proj)
-                                lifeTime.SetValue(Proj, (float)lifeTime.GetValue(Proj) / ProjSpeedChangeMulti);
-                        }
-                        //Debug.Log("TweakTech: AddSlowProjectile - Could not fetch ReAimer in " + block.name + " to change");
                         return;
                     case ProjSpeedChange.Fast:
                         //FD.m_MuzzleVelocity *= ProjSpeedChangeMulti;
@@ -324,23 +328,21 @@ namespace TweakTech
                                 lifeTime.SetValue(Proj, ((float)lifeTime.GetValue(Proj) / ProjSpeedChangeMulti) / ChangePatcher.HighExplosiveSpeedMulti);
                         }
 
-                        if (!KickStart.RandomAdditionsAvail)
-                            return;
-                        if (!(bool)WProj)
+                        if (KickStart.RandomAdditionsAvail)
                         {
-                            WProj = BP.gameObject.AddComponent<WeightedProjectile>();
-                            //Debug.Log("TweakTech: ChangeProjectileSpeed - Added WeightedProjectile to " + block.name);
+                            if (!(bool)WProj)
+                            {
+                                WProj = BP.gameObject.AddComponent<WeightedProjectile>();
+                                //Debug.Log("TweakTech: ChangeProjectileSpeed - Added WeightedProjectile to " + block.name);
+                            }
+                            WProj.CustomGravity = true;
+                            WProj.CustomGravityFractionSpeed = false;
+                            WProj.ProjectileMass = 0.00123f;
+                            //FD.m_MuzzleVelocity *= ChangePatcher.HighExplosiveSpeedMulti;
+                            WProj.GravityAndSpeedScale = ChangePatcher.HighExplosiveSpeedMulti;
+                            ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
+                            //Debug.Log("TweakTech: AddSlowProjectile - Could not fetch ReAimer in " + block.name + " to change");
                         }
-                        WProj.CustomGravity = true;
-                        WProj.CustomGravityFractionSpeed = false;
-                        WProj.ProjectileMass = 0.00123f;
-                        //FD.m_MuzzleVelocity *= ChangePatcher.HighExplosiveSpeedMulti;
-                        WProj.GravityAndSpeedScale = ChangePatcher.HighExplosiveSpeedMulti;
-                        if (block.GetComponent<ReAimer>())
-                            block.GetComponent<ReAimer>().GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
-                        else
-                            block.gameObject.AddComponent<ReAimer>().GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
-                        //Debug.Log("TweakTech: AddSlowProjectile - Could not fetch ReAimer in " + block.name + " to change");
                         return;
                 }
             }
@@ -350,13 +352,24 @@ namespace TweakTech
             }
         }
 
-
+        /// <summary>
+        /// Checks if there is a bullet prefab stored for this mod
+        /// </summary>
+        /// <param name="block"></param>
+        /// <returns></returns>
         internal static bool IsPrefabSet(TankBlock block)
         {
             BlockTypes type = block.BlockType;
             return cacheProjEdits.ContainsKey(type);
         }
-        internal static WeaponRound GetOrSetBPrefab(TankBlock block, BlockTypes Override = BlockTypes.GSOAnchorAI_121)
+        /// <summary>
+        /// Creates a seperate bullet prefab for this mod to tweak from existing bullet prefabs and then sets that to the block.
+        /// DO NOT USE THIS TO SET THE BASE PREFAB
+        /// </summary>
+        /// <param name="block">Where to get the default prefab</param>
+        /// <param name="Override">In case we can't easily get the BlockType</param>
+        /// <returns></returns>
+        internal static WeaponRound GetOrSetBPrefab(TankBlock originalPrefab, BlockTypes Override = BlockTypes.GSOAnchorAI_121)
         {
             if (cacheProjEdits.TryGetValue(Override, out WeaponRound val))
             {
@@ -369,7 +382,7 @@ namespace TweakTech
                 var GON = UnityEngine.Object.Instantiate(GetOGBPrefab(FD2.m_BulletPrefab).gameObject, null);
                 GON.SetActive(false);
                 GON.name = GON.name + "_TWEAKTECH_EDIT";
-                var WR = GON.GetComponent<WeaponRound>();
+                var newBullet = GON.GetComponent<WeaponRound>();
                 //var Inst = WR.Spawn(Singleton.dynamicContainer, Vector3.zero, Quaternion.identity);
                 //Inst.gameObject.SetActive(false);
 
@@ -384,21 +397,27 @@ namespace TweakTech
                 if (hadToEnable)
                     Singleton.Manager<ComponentPool>.inst.DisableInitPools = true;
                 */
-                cacheProjEdits.Add(Override, WR);
+                cacheProjEdits.Add(Override, newBullet);
                 //Debug.Log("TweakTech: GetOrSetBPrefab - Registered " + Override + " | " + WR.name);
                 //Set = false;
-                if (FD2.m_BulletPrefab == WR)
+                if (FD2.m_BulletPrefab == newBullet)
                 {
-                    Debug.Log("TweakTech: ASSERT - UnityEngine.Object.Instantiate IS NOT DOING IT'S JOB!!! " + block.name);
+                    Debug.LogError("TweakTech: ASSERT - PREFAB WAS OVERWRITTEN!!! " + originalPrefab.name);
                 }
-                return WR;
+                return newBullet;
             }
             else
             {
-                Debug.Log("TweakTech: GetOrSetBPrefab - NULL FireData in " + block.name);
+                //Debug.Log("TweakTech: GetOrSetBPrefab - NULL FireData in " + originalPrefab.name);
                 return null;
             }
         }
+
+        /// <summary>
+        /// Replaces this mod's prefab pool with the specified bullet prefab
+        /// </summary>
+        /// <param name="BT">The BlockType this prefab is assigned to</param>
+        /// <param name="WR">The bullet prefab to replace the previous with</param>
         internal static void SetBPrefab(BlockTypes BT, WeaponRound WR)
         {
             if (WR == null)
@@ -526,15 +545,38 @@ namespace TweakTech
             }
             else
             {
-                Debug.Log("TweakTech: GetOrSetBPrefab - NULL FireData in " + block.name);
+                //Debug.Log("TweakTech: GetOrSetBPrefab - NULL FireData in " + block.name);
                 return null;
+            }
+        }
+        internal static void ResetBPrefab(TankBlock block, BlockTypes type)
+        {
+            //Set = true;
+            TankBlock refBlock = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(type);
+            var FD = refBlock.GetComponent<FireData>();
+            if (FD)
+            {
+                WeaponRound ogPrefab = GetOGBPrefab(FD.m_BulletPrefab);
+                if (!ogPrefab)
+                    return;
+                /*
+                if (cacheProjEdits.TryGetValue(type, out WeaponRound val))
+                {
+                    var WPj = val.GetComponent<WeightedProjectile>();
+                    if (WPj)
+                        UnityEngine.Object.Destroy(WPj);
+                }*/
+            }
+            else
+            {
+                //Debug.Log("TweakTech: GetOrSetBPrefab - NULL FireData in " + block.name);
             }
         }
         private static WeaponRound GetOGBPrefab(WeaponRound val)
         {
             if (val == null)
             {
-                Debug.Log("TweakTech: GetOGBPrefab - Input value is null!");
+                //Debug.Log("TweakTech: GetOGBPrefab - Input value is null! " + StackTraceUtility.ExtractStackTrace());
                 return null;
             }
             WeaponRound inst = Singleton.Manager<ComponentPool>.inst.GetOriginalPrefab(val);

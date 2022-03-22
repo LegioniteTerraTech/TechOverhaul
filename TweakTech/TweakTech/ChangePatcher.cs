@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace TweakTech
 {
+    /// <summary>
+    /// This should only edit existing blocks, not the references.
+    /// </summary>
     public class ChangePatcher
     {
         public static bool MaximumFireRateAdjust = true;
@@ -38,7 +41,7 @@ namespace TweakTech
             worked = true;
             if (!KickStart.RandomAdditionsAvail)
             {
-                Debug.Log("TweakTech: RandomAdditions must be installed and enabled for this to work.");
+                Debug.Log("TweakTech: RandomAdditions must be installed and enabled for this to work properly!");
                 KickStart.WeaponAimModAvail = false;
                 return;
             }
@@ -121,10 +124,11 @@ namespace TweakTech
 
         }
         private static void ApplyFireRateBlockTweaks()
-        {
-            Dictionary<int, Transform> blocks = (Dictionary<int, Transform>)allBlocks.GetValue(Singleton.Manager<ManSpawn>.inst);
-            int[] blocks1 = new int[blocks.Count];
-            blocks.Keys.CopyTo(blocks1, 0);
+        {   // this edits the vanilla prefabs.  DO NOT DO THIS
+            /*
+            Dictionary<int, Transform> prefabBlocks = (Dictionary<int, Transform>)allBlocks.GetValue(Singleton.Manager<ManSpawn>.inst);
+            int[] blocks1 = new int[prefabBlocks.Count];
+            prefabBlocks.Keys.CopyTo(blocks1, 0);
             foreach (int num in blocks1)
             {
                 BlockTypes BT = (BlockTypes)num;
@@ -133,9 +137,17 @@ namespace TweakTech
             }
             Debug.Log("TweakTech: ApplyFireRateBlockTweaks - changed " + timesFired);
             timesFired = 0;
+            */
         }
 
         // Changing
+
+        /// <summary>
+        /// Set the prefabs? This one's broken asince it changes the base prefabs
+        /// </summary>
+        /// <param name="bloc">The block to apply to</param>
+        /// <param name="BT">The block type of the tank block</param>
+        /// <param name="useOG">Take the prefab's stats</param>
         private static void ApplyFireRateBlockTweak(TankBlock bloc, BlockTypes BT, bool useOG = true)
         {
             Transform trans = bloc.transform;
@@ -177,7 +189,7 @@ namespace TweakTech
                                             if ((bool)OGSplode && (bool)retrofit)
                                             {
                                                 retrofit.m_MaxDamageStrength = OGSplode.m_MaxDamageStrength * adjust;
-                                                retrofit.m_MaxImpulseStrength = (OGSplode.m_MaxImpulseStrength * (adjust / 4)) + OGSplode.m_MaxImpulseStrength;
+                                                retrofit.m_MaxImpulseStrength = (OGSplode.m_MaxImpulseStrength * (adjust / 4f)) + OGSplode.m_MaxImpulseStrength;
                                             }
                                             WeaponTweak.explode.SetValue(Proj, trans3);
                                         }
@@ -195,7 +207,7 @@ namespace TweakTech
                                             if ((bool)retrofit)
                                             {
                                                 retrofit.m_MaxDamageStrength *= adjust;
-                                                retrofit.m_MaxImpulseStrength = (retrofit.m_MaxImpulseStrength * (adjust / 4)) + retrofit.m_MaxImpulseStrength;
+                                                retrofit.m_MaxImpulseStrength = (retrofit.m_MaxImpulseStrength * (adjust / 4f)) + retrofit.m_MaxImpulseStrength;
                                             }
                                             WeaponTweak.explode.SetValue(Proj, trans3);
                                         }
@@ -217,23 +229,30 @@ namespace TweakTech
                 Debug.Log("TweakTech: ApplyFireRateBlockTweaks - error " + e);
             }
         }
+        
+        /// <summary>
+        /// Tweaks the existing active blocks without editing the prefabs
+        /// </summary>
+        /// <param name="BT"></param>
+        /// <param name="BTW"></param>
+        /// <returns></returns>
         internal static string ApplyFireRateBlockTweakActive(BlockTypes BT, BlockTweak BTW)
         {
-            TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
-            Transform trans = bloc.transform;
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
+            Transform transPrefab = prefab.transform;
             try
             {
-                var MW = bloc.GetComponent<ModuleWeapon>();
+                var MW = prefab.GetComponent<ModuleWeapon>();
                 if ((bool)MW)
                 {   // reduce firerates
-                    var MWG = bloc.GetComponent<ModuleWeaponGun>();
+                    var MWG = prefab.GetComponent<ModuleWeaponGun>();
                     if ((bool)MWG)
                     {
-                        var FD = trans.GetComponent<FireData>();
+                        var FD = transPrefab.GetComponent<FireData>();
                         bool shouldReduce = MWG.m_ShotCooldown < FirerateReductionMin;
                         if ((bool)FD && shouldReduce)
                         {
-                            var WR = WeaponTweak.GetOrSetBPrefab(bloc, BT);
+                            var WR = WeaponTweak.GetOrSetBPrefab(prefab, BT);
                             if ((bool)WR)
                             {
                                 // RESET
@@ -250,7 +269,7 @@ namespace TweakTech
                                     {
                                         var trans2 = (Transform)WeaponTweak.explode.GetValue(ProjOG);
                                         OGSplode = trans2.GetComponent<Explosion>();
-                                        var trans3 = WeaponTweak.GetOrSetEPrefab(bloc, BT);
+                                        var trans3 = WeaponTweak.GetOrSetEPrefab(prefab, BT);
                                         retrofit = trans3.GetComponent<Explosion>();
                                         if ((bool)OGSplode && (bool)retrofit)
                                         {
@@ -262,8 +281,8 @@ namespace TweakTech
                                     catch { }
                                     WeaponTweak.deals.SetValue(WR, (int)WeaponTweak.deals.GetValue(WROG));
                                     
-                                    if (BTW != null)
-                                        BTW.ApplyToBlock();
+                                    //if (BTW != null)
+                                    //    BTW.ApplyToBlock();
 
                                     float adjust = ProjectileReduction;
                                     if (MaximumFireRateAdjust)
@@ -273,7 +292,7 @@ namespace TweakTech
                                     if (exploGet)
                                     {
                                         retrofit.m_MaxDamageStrength *= adjust;
-                                        retrofit.m_MaxImpulseStrength = (retrofit.m_MaxImpulseStrength * (adjust / 4)) + retrofit.m_MaxImpulseStrength;
+                                        retrofit.m_MaxImpulseStrength = (retrofit.m_MaxImpulseStrength * (adjust / 4f)) + retrofit.m_MaxImpulseStrength;
                                         //Debug.Log("TweakTech: ApplyFireRateBlockTweaks - Block " + BT.ToString() + " explosion is now " + retrofit.m_MaxDamageStrength);
                                     }
 
@@ -299,19 +318,25 @@ namespace TweakTech
             }
             return "";
         }
+
+        /// <summary>
+        /// Use this to reset the tweaks doe to the active block to the prefab's values
+        /// </summary>
+        /// <param name="BT"></param>
+        /// <param name="WR"></param>
         internal static void CopyFireRateBlockTweakToPRESENT(BlockTypes BT, WeaponRound WR)
         {
-            TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
-            Transform trans = bloc.transform;
+            TankBlock Prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
+            Transform transPrefab = Prefab.transform;
             try
             {
-                var MW = bloc.GetComponent<ModuleWeapon>();
+                var MW = Prefab.GetComponent<ModuleWeapon>();
                 if ((bool)MW)
                 {   // reduce firerates
-                    var MWG = bloc.GetComponent<ModuleWeaponGun>();
+                    var MWG = Prefab.GetComponent<ModuleWeaponGun>();
                     if ((bool)MWG)
                     {
-                        var FD = trans.GetComponent<FireData>();
+                        var FD = transPrefab.GetComponent<FireData>();
                         bool shouldReduce = MWG.m_ShotCooldown < FirerateReductionMin;
                         if ((bool)FD && shouldReduce)
                         {
@@ -332,7 +357,7 @@ namespace TweakTech
                                     {
                                         var trans2 = (Transform)WeaponTweak.explode.GetValue(ProjREF);
                                         REFSplode = trans2.GetComponent<Explosion>();
-                                        var trans3 = WeaponTweak.GetOrSetEPrefab(bloc, BT);
+                                        var trans3 = WeaponTweak.GetOrSetEPrefab(Prefab, BT);
                                         retrofit = trans3.GetComponent<Explosion>();
                                         if ((bool)REFSplode && (bool)retrofit)
                                         {
@@ -370,27 +395,33 @@ namespace TweakTech
         }
 
         // Returning
+        /// <summary>
+        /// Resets the active block back to the prefab's values
+        /// </summary>
+        /// <param name="BT"></param>
+        /// <param name="BTW"></param>
+        /// <returns></returns>
         internal static string ResetBlockTweakActive(BlockTypes BT, BlockTweak BTW)
         {
-            TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
-            Transform trans = bloc.transform;
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
+            Transform transPrefab = prefab.transform;
             try
             {
-                var MW = bloc.GetComponent<ModuleWeapon>();
+                var MW = prefab.GetComponent<ModuleWeapon>();
                 if ((bool)MW)
                 {   // reduce firerates
-                    var MWG = bloc.GetComponent<ModuleWeaponGun>();
+                    var MWG = prefab.GetComponent<ModuleWeaponGun>();
                     if ((bool)MWG)
                     {
-                        var FD = trans.GetComponent<FireData>();
+                        var FD = transPrefab.GetComponent<FireData>();
                         if ((bool)FD)
                         {
-                            var WR = WeaponTweak.GetOrSetBPrefab(bloc, BT);
+                            var WR = WeaponTweak.GetOrSetBPrefab(prefab, BT);
                             if ((bool)WR)
                             {   // RESET
+                                var Proj = WR.GetComponent<Projectile>();
                                 var WROG = FD.m_BulletPrefab;
                                 var ProjOG = FD.m_BulletPrefab.GetComponent<Projectile>();
-                                var Proj = WR.GetComponent<Projectile>();
                                 if ((bool)Proj && (bool)ProjOG)
                                 {
                                     Explosion OGSplode = null;
@@ -399,7 +430,7 @@ namespace TweakTech
                                     {
                                         var trans2 = (Transform)WeaponTweak.explode.GetValue(ProjOG);
                                         OGSplode = trans2.GetComponent<Explosion>();
-                                        var trans3 = WeaponTweak.GetOrSetEPrefab(bloc, BT);
+                                        var trans3 = WeaponTweak.GetOrSetEPrefab(prefab, BT);
                                         retrofit = trans3.GetComponent<Explosion>();
                                         if ((bool)OGSplode && (bool)retrofit)
                                         {
@@ -435,17 +466,17 @@ namespace TweakTech
         }
         internal static void ResetFireRateBlockTweakToPRESENT(BlockTypes BT, WeaponRound WR)
         {
-            TankBlock bloc = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
-            Transform trans = bloc.transform;
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(BT);
+            Transform transPrefab = prefab.transform;
             try
             {
-                var MW = bloc.GetComponent<ModuleWeapon>();
+                var MW = prefab.GetComponent<ModuleWeapon>();
                 if ((bool)MW)
                 {   // reduce firerates
-                    var MWG = bloc.GetComponent<ModuleWeaponGun>();
+                    var MWG = prefab.GetComponent<ModuleWeaponGun>();
                     if ((bool)MWG)
                     {
-                        var FD = trans.GetComponent<FireData>();
+                        var FD = transPrefab.GetComponent<FireData>();
                         if ((bool)FD)
                         {
                             if ((bool)WR)
@@ -464,7 +495,7 @@ namespace TweakTech
                                     {
                                         var trans2 = (Transform)WeaponTweak.explode.GetValue(ProjREF);
                                         REFSplode = trans2.GetComponent<Explosion>();
-                                        var trans3 = WeaponTweak.GetOrSetEPrefab(bloc, BT);
+                                        var trans3 = WeaponTweak.GetOrSetEPrefab(prefab, BT);
                                         retrofit = trans3.GetComponent<Explosion>();
                                         if ((bool)REFSplode && (bool)retrofit)
                                         {
@@ -495,21 +526,41 @@ namespace TweakTech
             }
         }
 
+        private static bool appliedFirstTweaks = false;
         private static bool appliedTweaks = false;
         internal static void ApplyBlockTweaks()
         {
             if (appliedTweaks)
                 return;
             Debug.Log("TweakTech: ApplyBlockTweaks - Initializing");
-            foreach (BlockTweak BT in Tweaks.BlockTweaks)
+            if (!appliedFirstTweaks)
             {
-                try
+                Debug.Log("TweakTech: ApplyBlockTweaks(FIRST INIT) - Initializing");
+                foreach (BlockTweak BT in Tweaks.BlockTweaks)
                 {
-                    BT.ApplyToBlock();
+                    try
+                    {
+                        BT.ApplyToBlockProjectile();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Log("TweakTech: ApplyBlockTweaks(FIRST INIT) - error " + e);
+                    }
                 }
-                catch
+                appliedFirstTweaks = true;
+            }
+            else
+            {
+                foreach (BlockTweak BT in Tweaks.BlockTweaks)
                 {
-                    Debug.Log("TweakTech: ApplyBlockTweaks - error");
+                    try
+                    {
+                        BT.ApplyToBlock();
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Log("TweakTech: ApplyBlockTweaks - error " + e);
+                    }
                 }
             }
             Debug.Log("TweakTech: ApplyBlockTweaks - Done building");
@@ -524,11 +575,11 @@ namespace TweakTech
             {
                 try
                 {
-                    BT.ResetApplyToBlock();
+                    WeaponTweak.ResetBPrefab(BT.ResetApplyToBlock(), BT.Type);
                 }
-                catch
+                catch (Exception e)
                 {
-                    Debug.Log("TweakTech: RemoveBlockTweaks - error");
+                    Debug.Log("TweakTech: RemoveBlockTweaks - error " + e);
                 }
             }
             Debug.Log("TweakTech: RemoveBlockTweaks - Done building");
@@ -579,7 +630,7 @@ namespace TweakTech
     }
 
 
-    internal class FDBookmark : Module
+    internal class FDBookmark : MonoBehaviour
     {
         internal static bool startWorking = false;
         internal bool DoReset = false;
@@ -650,7 +701,7 @@ namespace TweakTech
                 try
                 {
                     TankBlock Block = FDB.GetComponent<TankBlock>();
-                    TankBlock blockF = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
+                    TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
                     FDB.Block = Block;
                     if (!reformatted.Contains(Block.BlockType))
                     {
@@ -664,10 +715,10 @@ namespace TweakTech
                         reformatted.Add(Block.BlockType);
 
                     }
-                    if (Block != blockF)
+                    if (Block != prefab)
                     {
                         FDB.DoReset = true;
-                        FDB.ResetChanges(blockF);
+                        FDB.ResetChanges(prefab);
                     }
                 }
                 catch { }
@@ -732,10 +783,10 @@ namespace TweakTech
             else
                 Destroy(this);
         }
-        public void ApplyChanges(TankBlock blockF)
+        public void ApplyChanges(TankBlock prefab)
         {
-            var FD = blockF.GetComponent<FDBookmark>();
-            if (Block == blockF)
+            var FD = prefab.GetComponent<FDBookmark>();
+            if (Block == prefab)
             {
                 //Debug.Log("TweakTech: FDBookmark - First call for block " + Block.name);
             }
@@ -748,7 +799,7 @@ namespace TweakTech
                 try
                 {
                     var FDa = (FireData)FDaG.GetValue(MWG);
-                    FDa.m_BulletPrefab = WeaponTweak.GetOrSetBPrefab(blockF, Block.BlockType);
+                    FDa.m_BulletPrefab = WeaponTweak.GetOrSetBPrefab(prefab, Block.BlockType);
                     //Debug.Log("TweakTech: ApplyChanges - Block " + Block.name.ToString() + " prefab changed to " + FDa.m_BulletPrefab.gameObject.name);
                     if (FDa.gameObject != Block.gameObject)
                         Debug.Log("TweakTech: FDBookmark - Instance failiure " + Block.name);
@@ -759,9 +810,9 @@ namespace TweakTech
                 }
 
                 //Debug.Log("TweakTech: FDBookmark - 1");
-                var MWOG = blockF.GetComponent<ModuleWeapon>();
+                var MWOG = prefab.GetComponent<ModuleWeapon>();
                 var MW = Block.GetComponent<ModuleWeapon>();
-                var MWGOG = blockF.GetComponent<ModuleWeaponGun>();
+                var MWGOG = prefab.GetComponent<ModuleWeaponGun>();
                 if ((bool)MW && (bool)MWOG)
                 {   // reduce firerates
                     //Debug.Log("TweakTech: FDBookmark - 2");
@@ -781,17 +832,6 @@ namespace TweakTech
                             adjust = ChangePatcher.FirerateReductionMin / Mathf.Max(MWGOG.m_ShotCooldown, 0.01f);
                         }
 
-                        //Debug.Log("TweakTech: FDBookmark - 5");
-                        if (DoReset)
-                        {
-                            //Debug.Log("TweakTech: FDBookmark - 6");
-                            var BT = Tweaks.BlockTweaks.Find(delegate (BlockTweak cand) { return cand.Type == Block.BlockType; });
-                            if (BT != null)
-                            {
-                                BT.ChangeBlock(Block);
-                            }
-                        }
-                        DoReset = false;
                         //Debug.Log("TweakTech: FDBookmark - 7");
 
                         MWG.m_ShotCooldown *= adjust;
@@ -803,10 +843,15 @@ namespace TweakTech
             }
             enabled = false;
         }
-        public void ResetChanges(TankBlock blockF)
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="prefab">Prefab</param>
+        public void ResetChanges(TankBlock prefab)
         {
-            var FD = blockF.GetComponent<FDBookmark>();
-            if (Block == blockF)
+            var FD = prefab.GetComponent<FDBookmark>();
+            if (Block == prefab)
             {
                 //Debug.Log("TweakTech: FDBookmark - First call for block " + Block.name);
             }
@@ -819,7 +864,7 @@ namespace TweakTech
                 try
                 {
                     var FDa = (FireData)FDaG.GetValue(MWG);
-                    FDa.m_BulletPrefab = blockF.GetComponent<FireData>().m_BulletPrefab;
+                    FDa.m_BulletPrefab = prefab.GetComponent<FireData>().m_BulletPrefab;
                     Debug.Log("TweakTech: FDBookmark - Reset " + Block.name + " projectile to " + FDa.m_BulletPrefab.name);
                 }
                 catch
@@ -828,9 +873,9 @@ namespace TweakTech
                 }
 
                 //Debug.Log("TweakTech: FDBookmark - 1");
-                var MWOG = blockF.GetComponent<ModuleWeapon>();
                 var MW = Block.GetComponent<ModuleWeapon>();
-                var MWGOG = blockF.GetComponent<ModuleWeaponGun>();
+                var MWOG = prefab.GetComponent<ModuleWeapon>();
+                var MWGOG = prefab.GetComponent<ModuleWeaponGun>();
                 if ((bool)MW && (bool)MWOG)
                 {   // reduce firerates
                     if ((bool)MWG && (bool)MWGOG)

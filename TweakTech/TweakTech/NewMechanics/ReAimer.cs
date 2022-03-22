@@ -8,7 +8,7 @@ using System.Reflection;
 namespace TweakTech
 {
     /// <summary>
-    /// Note: this is automatically disabled when WeaponAimMod is installed as that has better target leading
+    /// Note: this is automatically disabled when WeaponAimMod is installed as that mod has better target leading
     /// </summary>
     public class ReAimer : MonoBehaviour
     {
@@ -16,11 +16,30 @@ namespace TweakTech
         private ModuleWeapon Weap;
         private ModuleWeaponGun WeapG;
         public float GravSpeedModifier = 1;
-        public Func<Vector3, Vector3> swatch;
+        private Func<Vector3, Vector3> swatch;
+        public Func<Vector3, Vector3> swatchGet { 
+            get 
+            {
+                if (KickStart.EnableThis)
+                    return swatch;
+                return swatchDefault;
+            } 
+        }
+        public Func<Vector3, Vector3> swatchDefault;
 
 
         private static readonly FieldInfo SeekStrength = typeof(SeekingProjectile).GetField("m_TurnSpeed", BindingFlags.NonPublic | BindingFlags.Instance);
 
+        public static ReAimer CreateOrUpdateForBlock(TankBlock TB)
+        {
+            if (TB.GetComponentInChildren<BeamWeapon>() || TB.GetComponent<FireDataShotgun>())
+                return null; // Beams and shotguns do not lead!
+
+            var aimer = TB.GetComponent<ReAimer>();
+            if (!aimer)
+                return ApplyToBlock(TB);
+            return aimer;
+        }
         public static ReAimer ApplyToBlock(TankBlock TB)
         {
             if (TB.GetComponentInChildren<BeamWeapon>() || TB.GetComponent<FireDataShotgun>())
@@ -107,6 +126,34 @@ namespace TweakTech
                 }
             }
             return null;
+        }
+        public void ReCheckAiming()
+        {
+            if (block.GetComponentInChildren<BeamWeapon>() || block.GetComponent<FireDataShotgun>())
+                return; // Beams and shotguns do not lead!
+
+            var WeapNew = block.GetComponent<ModuleWeapon>();
+            if ((bool)WeapNew)
+            {
+                var MWG = block.GetComponent<ModuleWeaponGun>();
+                if ((bool)MWG)
+                {
+                    var RA = block.gameObject.GetComponent<ReAimer>();
+                    RA.block = block;
+                    RA.Weap = WeapNew;
+                    RA.WeapG = MWG;
+                    if (MWG.AimWithTrajectory())
+                    {
+                        RA.swatch = RA.RoughPredictAim;
+                        //Debug.Log("TweakTech: Changed TargetAimer(Arc) for " + TB.name);
+                    }
+                    else
+                    {
+                        RA.swatch = RA.RoughPredictAimS;
+                        //Debug.Log("TweakTech: Changed TargetAimer(Straight) for " + TB.name);
+                    }
+                }
+            }
         }
 
         public Vector3 RoughPredictAimS(Vector3 aimPoint)
@@ -225,6 +272,7 @@ namespace TweakTech
                 {
                     VelocityDiff += target.rbody.velocity;// * Time.fixedDeltaTime;
                     Moving = !VelocityDiff.Approximately(Vector3.zero);
+                    return;
                 }
             }
             Moving = !VelocityDiff.Approximately(Vector3.zero);

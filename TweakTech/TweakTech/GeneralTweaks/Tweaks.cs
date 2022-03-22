@@ -1030,10 +1030,6 @@ namespace TweakTech
         {   // We slow it down to half speed because siege weapon
             if (!(bool)TB || !KickStart.RandomAdditionsAvail)
                 return;
-            if (AlreadyDid)
-            {
-                return;
-            }
             bool worked = false;
             try
             {
@@ -1043,14 +1039,13 @@ namespace TweakTech
                     WeaponRound BP = WeaponTweak.GetOrSetBPrefab(TB, Override);
                     if ((bool)BP)
                     {
-                        var GP = BP.gameObject.AddComponent<GravitateProjectile>();
-                        if ((bool)GP)
-                        {
-                            GP.WorldGravitateStrength = 0;
-                            GP.WorldAugmentedDragEnabled = true;
-                            GP.WorldAugmentedDragStrength = 0.025f;
-                            worked = true;
-                        }
+                        var GP = BP.gameObject.GetComponent<GravitateProjectile>();
+                        if (!GP)
+                            GP = BP.gameObject.AddComponent<GravitateProjectile>();
+                        GP.WorldGravitateStrength = 0;
+                        GP.WorldAugmentedDragEnabled = true;
+                        GP.WorldAugmentedDragStrength = 0.025f;
+                        worked = true;
                         var Proj = BP.gameObject.GetComponent<Projectile>();
                         if ((bool)Proj)
                             lifeTime.SetValue(Proj, (float)lifeTime.GetValue(Proj) * 2.5f);
@@ -1060,6 +1055,7 @@ namespace TweakTech
                         var Seek = BP.gameObject.GetComponent<SeekingProjectile>();
                         if ((bool)Seek)
                             seekSped.SetValue(Seek, (float)seekSped.GetValue(Seek) / 2.5f);
+                        Debug.Log("TweakTech: NerfCruiseMissile - nerfed " + TB.name);
                     }
                 }
             }

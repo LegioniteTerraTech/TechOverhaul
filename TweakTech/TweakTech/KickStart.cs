@@ -9,12 +9,19 @@ namespace TweakTech
 {
     // This mod ultimately relies off of RandomAdditions to operate!
     //   WeaponAimMod is also advised for better tracking as this mod has simple target aim prediction.
+    /// <summary>
+    /// Please reach out to LegioniteTerraTech if you would like to request changes.
+    /// </summary>
     public class KickStart
     {
         //Let hooks happen i guess
         const string ModName = "TweakTech";
 
+#if STEAM
+        public static bool EnableThis = false;
+#else
         public static bool EnableThis = true;
+#endif
 
         internal static bool RandomAdditionsAvail = false;
         internal static bool WeaponAimModAvail = false;
@@ -22,7 +29,33 @@ namespace TweakTech
         internal static bool FusionBlockAvail = false;
         internal static bool isBlockInjectorPresent = false;
 
+        internal static bool hasPatched = false;
 
+        internal static Harmony harmonyInstance = new Harmony("legioniteterratech.tweaktech");
+
+#if STEAM
+        public static void Enable()
+        {
+            RandomAdditionsAvail = LookForMod("RandomAdditions");
+            WeaponAimModAvail = LookForMod("WeaponAimMod");
+            TACAIModAvail = LookForMod("TAC_AI");
+            FusionBlockAvail = LookForMod("Fusion Block");
+            isBlockInjectorPresent = LookForMod("BlockInjector");
+            harmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
+
+            Debug.Log("TweakTech: Init");
+            EnableThis = true;
+
+        }
+        public static void Disable()
+        {
+            harmonyInstance.UnpatchAll();
+
+            Debug.Log("TweakTech: DeInit");
+            EnableThis = false;
+
+        }
+#else
         public static OptionToggle enabledMod;
         //public static OptionRange multiHP;
         public static OptionToggle blockHP150;
@@ -32,7 +65,6 @@ namespace TweakTech
 
         public static void Main()
         {
-            Harmony harmonyInstance = new Harmony("legioniteterratech.tweaktech");
             harmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
 
 
@@ -97,6 +129,7 @@ namespace TweakTech
             });*/
             NativeOptionsMod.onOptionsSaved.AddListener(() => { thisModConfig.WriteConfigJsonFile(); });
         }
+#endif
 
         public static bool LookForMod(string name)
         {

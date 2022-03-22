@@ -10,9 +10,10 @@ using Nuterra.BlockInjector;
 namespace TweakTech
 {
     /// <summary>
-    /// Unreferencable class for a reason:
+    /// Externally Unreferencable class for a reason:
     /// - This is only used to decode and is incomplete without most major functions found
     ///     within TAC AI's complete RawTech loader
+    ///     <para> Reuse this if you absolutely need a standalone. </para>
     /// </summary>
     internal static class RawTechLoaderLite
     {

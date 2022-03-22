@@ -4,11 +4,89 @@ using System.Linq;
 using UnityEngine;
 using HarmonyLib;
 using System.Reflection;
+using FusionBlock;
 
 namespace TweakTech
 {
+#if STEAM
+    public class KickStartTAC_AI : ModBase
+    {
+        
+        internal static KickStartTAC_AI oInst;
+
+        bool isInit = false;
+        bool firstInit = false;
+        public override bool HasEarlyInit()
+        {
+            return true;
+        }
+
+        // IDK what I should init here...
+        public override void EarlyInit()
+        {
+            if (oInst == null)
+            {
+                oInst = this;
+                if (!KickStart.hasPatched)
+                {
+                    try
+                    {
+                        KickStart.harmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
+                        KickStart.hasPatched = true;
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.Log("TweakTech: Error on patch");
+                        Debug.Log(e);
+                    }
+                }
+            }
+        }
+        public override void Init() 
+        {
+            if (isInit)
+                return;
+            if (oInst == null)
+                oInst = this;
+            try
+            {
+                KickStart.Enable();
+            }
+            catch (Exception e) { Debug.LogError(e); }
+            if (!firstInit)
+            {
+                StatusCondition.InitNewStatus();
+                ChangePatcher.ApplyTweaks();
+                firstInit = true;
+            }
+            else
+            {
+                FDBookmark.EnableAll();
+                BTBookmark.EnableAll();
+            }
+            isInit = true;
+        }
+        public override void DeInit()
+        {
+            if (!isInit)
+                return;
+            KickStart.Disable();
+            FDBookmark.DisableAll();
+            BTBookmark.DisableAll();
+            isInit = false;
+        }
+        
+    }
+#endif
+
     internal class Patches
     {
+        private static Type[] AllowedTypes = new Type[] {
+                typeof(BTBookmark),
+                typeof(FDBookmark),
+            };
+
+        // Major Patches
         [HarmonyPatch(typeof(ManSpawn))]
         [HarmonyPatch("OnDLCLoadComplete")]//
         private class AdjustBlocks
@@ -58,7 +136,9 @@ namespace TweakTech
                 if (MS)
                 {
                     MS.SwapMaterialDamage(false);
+                    MS.ResetMaterialToDefault();
                 }
+                BlockTweak.ApplyToBlockLocal(__instance);
             }
         }
 
@@ -126,7 +206,8 @@ namespace TweakTech
                         }
                         else
                             ReAimer.UpdateExisting(block);
-                        aimD.SetValue(__instance, RA.swatch);
+                        RA.swatchDefault = (Func<Vector3,Vector3>)aimD.GetValue(__instance);
+                        aimD.SetValue(__instance, RA.swatchGet);
                     }
                 }
                 catch
@@ -170,19 +251,33 @@ namespace TweakTech
                 if (tank)
                 {
                     bool isMerge = false;
-                    if (KickStart.FusionBlockAvail)
-                        isMerge = __instance.GetComponent<FusionBlock.Class1.ModuleFuseHalf>();
-                    if (isMerge || tank.Team != ManPlayer.inst.PlayerTeam)
-                        return;
+                    try
+                    {
+                        if (KickStart.FusionBlockAvail)
+                            isMerge = SafeCheck(__instance);
+                        if (isMerge || tank.Team != ManPlayer.inst.PlayerTeam)
+                            return;
+                    }
+                    catch { }
+
                     if (Singleton.Manager<ManPlayer>.inst.InventoryIsUnrestricted) { }
-                    else if (Singleton.Manager<ManGameMode>.inst.IsCurrentModeMultiplayer())
+                    else if (ManNetwork.IsNetworked)
                     {
                         if (ManNetwork.IsHost)
-                            Singleton.Manager<NetInventory>.inst.HostAddItem(__instance.block.BlockType, 1);
+                        {
+                            if (tank.netTech?.NetPlayer?.Inventory)
+                                tank.netTech?.NetPlayer?.Inventory.HostAddItem(__instance.block.BlockType, 1);
+                        }
                     }
                     else
-                        Singleton.Manager<SingleplayerInventory>.inst.HostAddItem(__instance.block.BlockType, 1);
+                    {
+                        Singleton.Manager<ManPlayer>.inst.AddBlockToInventory(__instance.block.BlockType);
+                    }
                 }
+            }
+            private static bool SafeCheck(ModuleDetachableLink __instance)
+            {
+                return __instance.GetComponent<Class1.ModuleFuseHalf>();
             }
         }
 

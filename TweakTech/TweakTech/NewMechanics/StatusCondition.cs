@@ -60,6 +60,9 @@ namespace TweakTech
         }
     }
 
+    /// <summary>
+    /// This is not applied consistantly between clients.  What the client sees on their own Tech is what they experience
+    /// </summary>
     public class StatusCondition : MonoBehaviour
     {   // A Block cannot have more than two statuses at once
 
@@ -72,7 +75,7 @@ namespace TweakTech
         public const float EMPGroundingRateSec = 250;
         public const float EMPGroundingRatePrecisePercentSec = 0.1f;
         public const float AcidVaporPercentSec = 50;
-        private const float RedDelay = 1f;
+        private const float RedDelay = 0.5f;
         private const float RecoverDelay = 2.5f;
         private const int MinimumVolRqdToHack = 7;
 
@@ -308,17 +311,15 @@ namespace TweakTech
             if (dmg.Invulnerable)
                 return 0;
             StatusCondition SC = dmg.Block?.GetComponent<StatusCondition>();
-            if (IsSameTeam(dmg, info))
-            {
-                if (!(bool)SC)
-                    return 1;
-                bool helpful = (SC.Status == StatusType.Freezing && (DamageTypesExt)info.DamageType == DamageTypesExt.Fire) ||
-                    (SC.Status == StatusType.Overheat && (DamageTypesExt)info.DamageType == DamageTypesExt.Cryo) ? true : false;
-                if (!helpful)
-                    return 1;
-            }
             if (SC)
             {
+                if (IsSameTeam(dmg, info))
+                {
+                    bool helpful = (SC.Status == StatusType.Freezing && (DamageTypesExt)info.DamageType == DamageTypesExt.Fire) ||
+                        (SC.Status == StatusType.Overheat && (DamageTypesExt)info.DamageType == DamageTypesExt.Cryo) ? true : false;
+                    if (!helpful)
+                        return 1;
+                }
                 switch (SC.Status)
                 {
                     case StatusType.Pry:
@@ -928,7 +929,7 @@ namespace TweakTech
         }
         public void ResetRenders()
         {
-            Vector4 vec4 = new Vector4(0.5f * t2d2H, 0, skinU, skinV);
+            Vector4 vec4 = new Vector4(0.5f * t2d2H, swap.MinEmitScale, skinU, skinV);
             propInitcache.SetVector(propID, vec4);
             foreach (Renderer ren in renders)
             {

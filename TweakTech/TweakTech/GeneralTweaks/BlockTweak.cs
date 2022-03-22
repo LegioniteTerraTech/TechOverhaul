@@ -6,13 +6,68 @@ using RandomAdditions;
 
 namespace TweakTech
 {
-    internal class BTBookmark : Module
+    internal class BTBookmark : MonoBehaviour
     {
         internal static bool startWorking = false;
+        internal static bool Adding = true;
+        internal static List<BlockTypes> reformatted;
         internal TankBlock Block;
         internal string MainType;
         internal BlockTweak Main;
         private short delay = 2;
+        public static void EnableAll()
+        {
+            Adding = true;
+            reformatted = new List<BlockTypes>();
+            foreach (BTBookmark BTB in Resources.FindObjectsOfTypeAll<BTBookmark>())
+            {
+                try
+                {
+                    TankBlock Block = BTB.GetComponent<TankBlock>();
+                    TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
+                    if (prefab == Block)
+                    {
+                        BTB.enabled = true;
+                        return;
+                    }
+                    BTB.Block = Block;
+                    BTB.Main.ChangeBlock(Block);
+                    //var FDB = BTB.GetComponent<FDBookmark>();
+                    //if (FDB)
+                    //    FDB.ApplyChanges(prefab);
+                }
+                catch { }
+            }
+            Debug.Log("TweakTech: BTBookmark.EnableAll - changed " + ChangePatcher.timesFired);
+            ChangePatcher.timesFired = 0;
+            reformatted = null;
+        }
+        public static void DisableAll()
+        {
+            Adding = false;
+            reformatted = new List<BlockTypes>();
+            foreach (BTBookmark BTB in Resources.FindObjectsOfTypeAll<BTBookmark>())
+            {
+                try
+                {
+                    TankBlock Block = BTB.GetComponent<TankBlock>();
+                    TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
+                    if (prefab == Block)
+                    {
+                        return;
+                    }
+                    BTB.Block = Block;
+                    BTB.Main.ResetBlock(Block);
+                    //var FDB = BTB.GetComponent<FDBookmark>();
+                    //if (FDB)
+                    //    FDB.ResetChanges(prefab);
+                }
+                catch { }
+            }
+            Debug.Log("TweakTech: BTBookmark.EnableAll - changed " + ChangePatcher.timesFired);
+            ChangePatcher.timesFired = 0;
+            reformatted = null;
+        }
 
         public void OnPool()
         {
@@ -27,7 +82,8 @@ namespace TweakTech
                     DelayedTrigger();
                 }
                 catch { }
-                Destroy(this);
+                enabled = false;
+                //Destroy(this);
             }
             else
                 delay--;
@@ -37,47 +93,45 @@ namespace TweakTech
         {
             if (!startWorking || !gameObject.activeSelf)
                 return;
-            //try
-            //{
-                Block = GetComponent<TankBlock>();
-                TankBlock blockF = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
+            Block = GetComponent<TankBlock>();
+            TankBlock blockF = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Block.BlockType);
 
-                var BT = blockF.GetComponent<BTBookmark>();
-                if ((bool)BT)
+            var BT = blockF.GetComponent<BTBookmark>();
+            if ((bool)BT)
+            {
+                if (Block == null)
                 {
-                    if (Block == null)
-                    {
-                        //Debug.Log("TweakTech: BTBookmark - BLOCK IS NULL!!!");
-                        return;
-                    }
-                    if (BT.Main == null)
-                    {
-                        //Debug.Log("TweakTech: BTBookmark - Init for block " + Block.name);
-                        BT.Main = Tweaks.BlockTweaks.Find(delegate (BlockTweak cand) { return cand.Type == Block.BlockType; });
-                    }
-                    /*
+                    //Debug.Log("TweakTech: BTBookmark - BLOCK IS NULL!!!");
+                    return;
+                }
+                if (BT.Main == null)
+                {
+                    //Debug.Log("TweakTech: BTBookmark - Init for block " + Block.name);
+                    BT.Main = Tweaks.BlockTweaks.Find(delegate (BlockTweak cand) { return cand.Type == Block.BlockType; });
+                }
+                /*
+                Debug.Log("TweakTech: BTBookmark - Setting up for modded block " + Block.name + " based on " + BT.MainType);
+                if (Block.name != BT.MainType)
+                {
                     Debug.Log("TweakTech: BTBookmark - Setting up for modded block " + Block.name + " based on " + BT.MainType);
-                    if (Block.name != BT.MainType)
-                    {
-                        Debug.Log("TweakTech: BTBookmark - Setting up for modded block " + Block.name + " based on " + BT.MainType);
-                        Destroy(BT);
-                        return;
-                    }*/
-                    if (Block == blockF)
-                    {
-                        //Debug.Log("TweakTech: BTBookmark - First call for block " + Block.name);
-                    }
-                    else
-                    {
-                        //Debug.Log("TweakTech: BTBookmark - Tweaked block " + Block.name);
-                        BT.Main.ChangeBlock(Block);
-                    }
+                    Destroy(BT);
+                    return;
+                }*/
+                if (Block == blockF)
+                {
+                    //Debug.Log("TweakTech: BTBookmark - First call for block " + Block.name);
                 }
                 else
-                    Destroy(this);
-            //}
-            //catch { }
+                {
+                    Debug.Log("TweakTech: BTBookmark - Tweaked block " + Block.name);
+                    if (Adding)
+                        BT.Main.ChangeBlock(Block);
+                }
+            }
+            else
+                Destroy(this);
         }
+
     }
 
     internal class BlockTweak
@@ -92,50 +146,81 @@ namespace TweakTech
 
         internal WeaponTweak WT;
         internal ScannerTweak ST;
+        /// <summary>
+        /// Prefab, AlreadyDid, the BlockType
+        /// </summary>
         internal Action<TankBlock, bool, BlockTypes> MiscChanges;
 
-        internal TankBlock ApplyToBlock()
+        internal TankBlock ApplyToBlockProjectile()
         {
-            TankBlock block = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
-            if ((bool)block)
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
+            if ((bool)prefab)
             {
-                BTBookmark BTB = block.gameObject.AddComponent<BTBookmark>();
-                BTB.Main = this;
-                BTB.MainType = block.gameObject.name;
+                BTBookmark BTB = prefab.GetComponent<BTBookmark>();
+                if (!BTB)
+                {
+                    BTB = prefab.gameObject.AddComponent<BTBookmark>();
+                    BTB.Main = this;
+                    BTB.MainType = prefab.gameObject.name;
+                }
                 int stepError = 0;
                 try
                 {
-                    //Debug.Log("TweakTech: PrepBlock - Loading for type " + Type);
-                    var FD = block.gameObject.GetComponent<FireData>();
+                    //Debug.Log("TweakTech: ApplyToBlock.PrepBlock - Loading for type " + Type);
+                    var FD = prefab.gameObject.GetComponent<FireData>();
                     if ((bool)FD)
                         if (FD.m_BulletPrefab != null)
-                            WeaponTweak.GetOrSetBPrefab(block, Type);
+                            WeaponTweak.GetOrSetBPrefab(prefab, Type);
                     stepError++;
                     if (WT != null)
-                        WT.ChangeWeapon(block, Type);
+                        WT.ChangeWeapon(prefab, Type);
                     stepError++;
                     // Additional changes (technical)\
-                    MiscChanges?.Invoke(block, false, Type);
+                    MiscChanges?.Invoke(prefab, false, Type);
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("TweakTech: BlockTweak.PrepBlock - error " + stepError + " | " + e);
+                    Debug.Log("TweakTech: BlockTweak.ApplyToBlock.PrepBlock - error " + stepError + " | " + e);
                 }
             }
-            return block;
+            return prefab;
+        }
+        internal TankBlock ApplyToBlock()
+        {
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
+            if ((bool)prefab)
+            {
+                BTBookmark BTB = prefab.GetComponent<BTBookmark>();
+                if (!BTB)
+                {
+                    BTB = prefab.gameObject.AddComponent<BTBookmark>();
+                    BTB.Main = this;
+                    BTB.MainType = prefab.gameObject.name;
+                }
+                int stepError = 0;
+                try
+                {
+                    //Debug.Log("TweakTech: ApplyToBlock.PrepBlock - Loading for type " + Type);
+                    var FD = prefab.gameObject.GetComponent<FireData>();
+                    if ((bool)FD)
+                        if (FD.m_BulletPrefab != null)
+                            WeaponTweak.GetOrSetBPrefab(prefab, Type);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("TweakTech: BlockTweak.ApplyToBlock.PrepBlock - error " + stepError + " | " + e);
+                }
+            }
+            return prefab;
         }
         internal bool ChangeBlock(TankBlock blockI)
         {
             int stepError = 0;
-            TankBlock refBlock = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
-            //Debug.Log("TweakTech: ApplyBlockTweaks - Changing " + blockI.name);
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
+            Debug.Log("TweakTech: ApplyBlockTweaks - Changing " + blockI.name);
             try
             {
-                var FD = blockI.GetComponent<FireData>();
-                if ((bool)FD)
-                    if (FD.m_BulletPrefab != null)
-                        FD.m_BulletPrefab = WeaponTweak.GetOrSetBPrefab(blockI);
-                var HPOG = refBlock.GetComponent<Damageable>();
+                var HPOG = prefab.GetComponent<Damageable>();
                 var HP = blockI.GetComponent<Damageable>();
                 if (HPChange != 0)
                 {
@@ -158,14 +243,21 @@ namespace TweakTech
                 stepError++;
                 // Additional changes (technical)\
                 MiscChanges?.Invoke(blockI, true, BlockTypes.GSOAIController_111);
+                var FD = blockI.GetComponent<FireData>();
+                if ((bool)FD)
+                    if (FD.m_BulletPrefab != null)
+                        FD.m_BulletPrefab = WeaponTweak.GetOrSetBPrefab(blockI);
             }
-            catch
+            catch (Exception e)
             {
-                Debug.Log("TweakTech: BlockTweak.ChangeBlock - error " + stepError);
+                Debug.Log("TweakTech: BlockTweak.ChangeBlock - error " + stepError + " " + e);
             }
             return blockI;
         }
-
+        /// <summary>
+        /// Resets
+        /// </summary>
+        /// <returns>Returns the prefab</returns>
         internal TankBlock ResetApplyToBlock()
         {
             TankBlock block = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
@@ -186,15 +278,11 @@ namespace TweakTech
         internal bool ResetBlock(TankBlock blockI)
         {
             int stepError = 0;
-            TankBlock refBlock = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
+            TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
             //Debug.Log("TweakTech: ApplyBlockTweaks - Changing " + blockI.name);
             try
             {
-                var FD = blockI.GetComponent<FireData>();
-                if ((bool)FD)
-                    if (FD.m_BulletPrefab != null)
-                        FD.m_BulletPrefab = refBlock.GetComponent<FireData>().m_BulletPrefab;
-                var HPOG = refBlock.GetComponent<Damageable>();
+                var HPOG = prefab.GetComponent<Damageable>();
                 var HP = blockI.GetComponent<Damageable>();
                 if (HPChange != 0)
                 {
@@ -207,17 +295,21 @@ namespace TweakTech
                     HP.DamageableType = HPOG.DamageableType;
                 stepError++;
                 if (FragilityReplace != -1)
-                    blockI.damage.m_DamageDetachFragility = refBlock.damage.m_DamageDetachFragility;
+                    blockI.damage.m_DamageDetachFragility = prefab.damage.m_DamageDetachFragility;
                 stepError++;
                 if (WT != null)
-                    WT.ResetWeapon(blockI, refBlock);
+                    WT.ResetWeapon(blockI, prefab);
                 stepError++;
                 if (ST != null)
-                    ST.ResetScanner(blockI, refBlock);
+                    ST.ResetScanner(blockI, prefab);
+                var FD = blockI.GetComponent<FireData>();
+                if ((bool)FD)
+                    if (FD.m_BulletPrefab != null)
+                        FD.m_BulletPrefab = prefab.GetComponent<FireData>().m_BulletPrefab;
             }
             catch
             {
-                Debug.Log("TweakTech: BlockTweak.ChangeBlock - error " + stepError);
+                Debug.Log("TweakTech: BlockTweak.ChangeBlock(RESET) - error " + stepError);
             }
             return blockI;
         }
@@ -228,7 +320,14 @@ namespace TweakTech
             BlockTweak BT = Tweaks.BlockTweaks.Find(delegate(BlockTweak BT1) { return BT1.Type == TB.BlockType; });
             if (BT != null)
             {
-                BT.ChangeBlock(TB);
+                BTBookmark BTB = TB.GetComponent<BTBookmark>();
+                if (!BTB)
+                {
+                    BTB = TB.gameObject.AddComponent<BTBookmark>();
+                    BTB.Main = BT;
+                    BTB.MainType = TB.gameObject.name;
+                }
+                //BT.ChangeBlock(TB);
             }
         }
     }
