@@ -11,8 +11,8 @@ namespace TweakTech
     public class ChangePatcher
     {
         public static bool MaximumFireRateAdjust = true;
-        internal static float ProjectileReduction = 4f;
-        internal static float FirerateReductionMin = 4f;
+        public static float ProjectileReduction = 4f;
+        public static float FirerateReductionMin = 4f;
 
         internal const float PlayerDamageMulti = 1f;
 
@@ -593,8 +593,21 @@ namespace TweakTech
             DamageMultiplierTable DMT = (DamageMultiplierTable)damageChart.GetValue(Singleton.Manager<ManDamage>.inst);
             float[] arraydmge = (float[])damageVals.GetValue(DMT);
 
+            /*
+            float gdm = 0.65f;
+
+            for (int step = 0; step < Enum.GetNames(typeof(ManDamage.DamageableType)).Length; step++)
+            {
+                for (int step2 = 0; step2 < Enum.GetNames(typeof(ManDamage.DamageType)).Length; step2++)
+                {
+                    arraydmge[(int)((int)step2 * ManDamage.NumDamageableTypes + step)] *= gdm;
+                }
+            }*/
+
             ReformatMultipliers(ref arraydmge);
-            foreach (DamageTweak DT in Tweaks.DMGTweaks)
+            List<DamageTweak> allTweaks = Tweaks.DMGTweaks;
+            //allTweaks.AddRange(Tweaks.DMGTweaksVanilla);
+            foreach (DamageTweak DT in allTweaks)
             {
                 arraydmge[(int)((int)DT.Dealer * ManDamage.NumDamageableTypes + DT.Taker)] = DT.Multiplier;
             }

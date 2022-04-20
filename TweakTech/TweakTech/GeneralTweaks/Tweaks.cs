@@ -15,14 +15,16 @@ namespace TweakTech
             // GSO
             new BlockTweak {
                 Type = BlockTypes.GSOAnchorFixed_111,
-                HPChange = -1250,
+                HPChange = -1250,// No more anchor walls
             },
             new BlockTweak {
                 Type = BlockTypes.GSOBigBertha_845,
                 WT = new WeaponTweak {
-                    OverrideTraverse = 40,
+                    OverrideTraverse = 17,
                     ProjSpeedChange = ProjSpeedChange.SlowedFast,
                     ProjSpeedChangeMulti = 2,
+                    OverrideCooldown = 7,
+                    DirectDamageMulti = 1.75f,
                     EditExplosion = true,
                     ExploDamgMulti = 1.5f,
                     ExploPushMulti = 1.75f,
@@ -54,6 +56,7 @@ namespace TweakTech
             new BlockTweak {
                 Type = BlockTypes.GSOCannonTurret_111,
                 WT = new WeaponTweak {
+                    // More viable as an assault gun
                     ProjSpeedChange = ProjSpeedChange.SlowedFast,
                     ProjSpeedChangeMulti = 2,//5
                     OverrideTraverse = 125,
@@ -62,6 +65,7 @@ namespace TweakTech
             new BlockTweak {
                 Type = BlockTypes.GSOMortarFixed_211,
                 WT = new WeaponTweak {
+                    // this mortar has weak, unreliable homing
                     //ProjSpeedChange = ProjSpeedChange.SlowedFast,
                     ProjSpeedChangeMulti = 1f,
                     DirectDamageMulti = 2.0f,
@@ -101,6 +105,12 @@ namespace TweakTech
             },
             // GC
             new BlockTweak {
+                Type = BlockTypes.GCPlasmaCutter_Auto_434,
+                WT = new WeaponTweak {
+                    OverrideTraverse = 45,
+                }
+            },
+            new BlockTweak {
                 Type = BlockTypes.GC_NailGun_122,
                 WT = new WeaponTweak {
                     ProjSpeedChange = ProjSpeedChange.Fast,
@@ -115,14 +125,13 @@ namespace TweakTech
                 Type = BlockTypes.GC_Catapult_234,
                 WT = new WeaponTweak {
                     ChangeSeeking = 1,
-                    ProjSpeedChange = ProjSpeedChange.SlowedFast,
-                    ProjSpeedChangeMulti = 1,
                     DirectDamageMulti = 2.5f,
                     EditExplosion = true,
                     ExploDamgMulti = 2,
                     ExploPushMulti = 1.25f,
                     ExploRadMulti = 1.75f,
-                }
+                },
+                MiscChanges = SpecChanges.EnableHoming,
             },
             new BlockTweak {
                 Type = BlockTypes.GC_Mortar_424,
@@ -136,11 +145,21 @@ namespace TweakTech
                     ExploPushMulti = 2,
                     ExploRadMulti = 1.5f,
                 },
-                MiscChanges = SpecChanges.DoubleHoming,
+                //MiscChanges = SpecChanges.DoubleHoming,
+            },
+            new BlockTweak {
+                Type = BlockTypes.GC_ScrapGun_223,
+                WT = new WeaponTweak {
+                    DirectDamageMulti = 0.35f,
+                },
             },
             // VEN
             new BlockTweak {
                 Type = BlockTypes.VENMGun_111,
+                WT = new WeaponTweak {
+                    ProjSpeedChange = ProjSpeedChange.Fast,
+                    ProjSpeedChangeMulti = 1.25f,
+                }
                 //MiscChanges = SpecChanges.PointDefense,
             },
             new BlockTweak {
@@ -155,6 +174,12 @@ namespace TweakTech
                 WT = new WeaponTweak {
                     ProjSpeedChange = ProjSpeedChange.Fast,
                     ProjSpeedChangeMulti = 2.25f,
+                }
+            },
+            new BlockTweak {
+                Type = BlockTypes.VENMiniGunDual_312,
+                WT = new WeaponTweak {
+                    OverrideTraverse = 65, //nerfed, but not as bad as HE's
                 }
             },
             /*
@@ -242,6 +267,12 @@ namespace TweakTech
                     ProjSpeedChange = ProjSpeedChange.Fast,
                     ProjSpeedChangeMulti = 1.25f, //faster
                     OverrideTraverse = 80, //slower
+                }
+            },
+            new BlockTweak {
+                Type = BlockTypes.HE_Mini_Gun_20_111,
+                WT = new WeaponTweak {
+                    OverrideTraverse = 45, //FAR slower because damage is busted
                 }
             },
             /*
@@ -563,6 +594,9 @@ namespace TweakTech
             },
         };
 
+        internal static List<DamageTweak> DMGTweaksVanilla = new List<DamageTweak>(){
+
+        };
         internal static List<DamageTweak> DMGTweaks = new List<DamageTweak>(){
             // Cryogenic
             new DamageTweak {
@@ -910,6 +944,39 @@ namespace TweakTech
                 Debug.Log("TweakTech: NerfTracking - fail in changing " + TB.name);
         }
 
+        internal static void EnableHoming(TankBlock TB, bool AlreadyDid, BlockTypes Override)
+        {
+            if (AlreadyDid)
+                return;
+            if (!(bool)TB)
+                return;
+            bool worked = false;
+            try
+            {
+                var FD = TB.GetComponent<FireData>();
+                if ((bool)FD)
+                {
+                    WeaponRound BP = WeaponTweak.GetOrSetBPrefab(TB, Override);
+                    if ((bool)BP)
+                    {
+                        var SP = BP.GetComponent<SeekingProjectile>();
+                        if ((bool)SP)
+                        {
+                            seekDist.SetValue(SP, 75f);
+                            seekSped.SetValue(SP, 35f);
+                            worked = true;
+                        }
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.Log("TweakTech: DoubleHoming - fail in changing " + TB.name + "  | " + e);
+            }
+            if (!worked)
+                Debug.Log("TweakTech: DoubleHoming - fail in changing " + TB.name);
+        }
         internal static void DoubleHoming(TankBlock TB, bool AlreadyDid, BlockTypes Override)
         {
             if (AlreadyDid)

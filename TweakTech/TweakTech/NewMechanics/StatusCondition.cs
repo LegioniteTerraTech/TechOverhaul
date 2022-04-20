@@ -240,7 +240,7 @@ namespace TweakTech
             SC.swap = MS;
             SC.Status = inflicted;
             SC.damageable = damageable;
-            SC.renders = GO.GetComponentsInChildren<Renderer>();
+            SC.renders = GO.GetComponentsInChildren<Renderer>(true);
             SC.originalFragility = GO.GetComponent<ModuleDamage>().m_DamageDetachFragility;
             ManStatus.acidUpdate.Subscribe(SC.UpdateAcid);
             ManStatus.spreadUpdate.Subscribe(SC.UpdateSpread);
@@ -308,6 +308,8 @@ namespace TweakTech
         // On receiving damage
         public static float RunStatusPre(Damageable dmg, ManDamage.DamageInfo info)
         {
+            if (!dmg)
+                return 0;
             if (dmg.Invulnerable)
                 return 0;
             StatusCondition SC = dmg.Block?.GetComponent<StatusCondition>();

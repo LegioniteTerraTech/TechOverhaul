@@ -46,11 +46,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="0Nuterra.NativeOptions">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\0Nuterra.NativeOptions\0Nuterra.NativeOptions.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="AcModHelper.Config">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\ModHelper.Config\AcModHelper.Config.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\285920\2685130411\0Nuterra.NativeOptions.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -59,6 +55,10 @@
     </Reference>
     <Reference Include="BlockInjector">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\Nuterra.BlockInjector\BlockInjector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ConfigHelper">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\285920\2758915184\ConfigHelper.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion Block">
@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeathmatchPrefabs.cs" />
+    <Compile Include="Debug.cs" />
     <Compile Include="GeneralTweaks\BlockTweak.cs" />
     <Compile Include="ChangePatcher.cs" />
     <Compile Include="NewMechanics\DamageTypesExt.cs" />
@@ -140,6 +141,22 @@ set e=$(TargetDir)&gt;nul
 xcopy /S /Y /R "!e:~0,-1!" !modpath!
 )
 
+set modpath1="C:\Program Files (x86)\Steam\steamapps\common\TerraTech\QMods\TweakTech"
+
+if exist !modpath1! (
+if $(ConfigurationName) == Debug (
+echo Copying to QMods
+set e=$(TargetDir)&gt;nul
+xcopy /S /Y /R "!e:~0,-1!" !modpath1!
+)
+)
+if exist !modpath1! (
+if $(ConfigurationName) == Release (
+echo Copying to QMods
+set e=$(TargetDir)&gt;nul
+xcopy /S /Y /R "!e:~0,-1!" !modpath1!
+)
+)
 
 set modpath2="C:\Users\Legionite\Desktop\Advanced AI\Assets\Mods\Tweak Tech"
 
@@ -158,6 +175,16 @@ if $(ConfigurationName) == Steam (
 echo Copying to SteamModLocalDirect
 set e=$(TargetDir)&gt;nul
 xcopy /S /Y /R "!e:~0,-1!" !modpath3!
+)
+)
+
+set modpath4="C:\Program Files (x86)\Steam\steamapps\workshop\content\285920\2765285386"
+
+if exist !modpath4! (
+if $(ConfigurationName) == Steam (
+echo Copying to SteamModWorkshopDirect
+set e=$(TargetDir)&gt;nul
+xcopy /S /Y /R "!e:~0,-1!" !modpath4!
 )
 )</PostBuildEvent>
   </PropertyGroup>

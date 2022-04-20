@@ -59,7 +59,7 @@ namespace TweakTech
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: WeaponTweak.ChangeWeapon - error " + stepError + " " + e);
+                Debug.LogError("TweakTech: WeaponTweak.ChangeWeapon - error " + stepError + " " + e);
             }
 
         }
@@ -74,11 +74,11 @@ namespace TweakTech
                 if ((bool)FD && (bool)FDOG)
                 {
                     FD.m_MuzzleVelocity = FDOG.m_MuzzleVelocity;
-                    ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = 1;
+                    ReAimer.CreateOrUpdateForBlock(block);
                 }
                 else
                 {
-                    Debug.Log("TweakTech: ChangeProjectileSpeed - Found no FireData in " + block.name + " to change");
+                    Debug.Info("TweakTech: ChangeProjectileSpeed - Found no FireData in " + block.name + " to change");
                 }
             }
             if (OverrideTraverse != 0)
@@ -86,11 +86,11 @@ namespace TweakTech
                 if ((bool)MW && (bool)OGMW)
                 {
                     MW.m_RotateSpeed = OGMW.m_RotateSpeed;
-                    //Debug.Log("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
+                    //Debug.Info("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
                 }
                 else
                 {
-                    Debug.Log("TweakTech: ResetWeapon - Found no ModuleWeapon in " + block.name + " to change");
+                    Debug.Info("TweakTech: ResetWeapon - Found no ModuleWeapon in " + block.name + " to change");
                 }
             }
             if (OverrideBurstCooldown > 0 || OverrideBurstCount >= 0 || OverrideCooldown > 0)
@@ -141,7 +141,7 @@ namespace TweakTech
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
+                Debug.LogError("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
             }
             return;
         }
@@ -154,7 +154,7 @@ namespace TweakTech
                 {
                     if (!KickStart.RandomAdditionsAvail)
                         return;
-                    ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = 1;
+                    ReAimer.CreateOrUpdateForBlock(block);
                 }
                 else
                 {
@@ -172,7 +172,7 @@ namespace TweakTech
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
+                Debug.LogError("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
             }
             return;
         }
@@ -210,11 +210,11 @@ namespace TweakTech
             if ((bool)MW)
             {
                 MW.m_RotateSpeed = OverrideTraverse;
-                Debug.Log("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
+                Debug.Info("TweakTech: OverrideTurretTraverse - changed traverse in " + block.name + " to " + OverrideTraverse);
             }
             else
             {
-                Debug.Log("TweakTech: OverrideTurretTraverse - Found no ModuleWeapon in " + block.name + " to change");
+                Debug.Info("TweakTech: OverrideTurretTraverse - Found no ModuleWeapon in " + block.name + " to change");
             }
         }
         private void OverrideCooldowns(TankBlock block)
@@ -258,12 +258,12 @@ namespace TweakTech
                         return;
                     case ProjSpeedChange.Slow:
                         FD.m_MuzzleVelocity = FDOG.m_MuzzleVelocity * ProjSpeedChangeMulti;
-                        ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ProjSpeedChangeMulti;
+                        ReAimer.CreateOrUpdateForBlock(block);
                         return;
                     case ProjSpeedChange.SlowedFast:
                         FD.m_MuzzleVelocity = FDOG.m_MuzzleVelocity * ProjSpeedChangeMulti;
                         FD.m_MuzzleVelocity *= ChangePatcher.HighExplosiveSpeedMulti;
-                        ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
+                        ReAimer.CreateOrUpdateForBlock(block);
                         return;
                 }
             }
@@ -297,7 +297,7 @@ namespace TweakTech
                             WProj.ProjectileMass = 0.00123f;
                             //FD.m_MuzzleVelocity *= ProjSpeedChangeMulti;
                             WProj.GravityAndSpeedScale = ProjSpeedChangeMulti;
-                            ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ProjSpeedChangeMulti;
+                            ReAimer.CreateOrUpdateForBlock(block);
                             if ((bool)BP)
                             {
                                 var Proj = BP.GetComponent<Projectile>();
@@ -340,7 +340,7 @@ namespace TweakTech
                             WProj.ProjectileMass = 0.00123f;
                             //FD.m_MuzzleVelocity *= ChangePatcher.HighExplosiveSpeedMulti;
                             WProj.GravityAndSpeedScale = ChangePatcher.HighExplosiveSpeedMulti;
-                            ReAimer.CreateOrUpdateForBlock(block).GravSpeedModifier = ChangePatcher.HighExplosiveSpeedMulti;
+                            ReAimer.CreateOrUpdateForBlock(block);
                             //Debug.Log("TweakTech: AddSlowProjectile - Could not fetch ReAimer in " + block.name + " to change");
                         }
                         return;

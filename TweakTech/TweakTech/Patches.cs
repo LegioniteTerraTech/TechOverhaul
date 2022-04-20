@@ -9,10 +9,10 @@ using FusionBlock;
 namespace TweakTech
 {
 #if STEAM
-    public class KickStartTAC_AI : ModBase
+    public class KickStartTweakTech : ModBase
     {
         
-        internal static KickStartTAC_AI oInst;
+        internal static KickStartTweakTech oInst;
 
         bool isInit = false;
         bool firstInit = false;
@@ -34,10 +34,9 @@ namespace TweakTech
                         KickStart.harmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
                         KickStart.hasPatched = true;
                     }
-                    catch (Exception e)
+                    catch
                     {
-                        Debug.Log("TweakTech: Error on patch");
-                        Debug.Log(e);
+                        Debug.LogAutoStackTrace("TweakTech: Error on patch");
                     }
                 }
             }
@@ -48,11 +47,12 @@ namespace TweakTech
                 return;
             if (oInst == null)
                 oInst = this;
+
             try
             {
                 KickStart.Enable();
             }
-            catch (Exception e) { Debug.LogError(e); }
+            catch (Exception e) { Debug.FatalError(e); }
             if (!firstInit)
             {
                 StatusCondition.InitNewStatus();
@@ -70,9 +70,9 @@ namespace TweakTech
         {
             if (!isInit)
                 return;
-            KickStart.Disable();
             FDBookmark.DisableAll();
             BTBookmark.DisableAll();
+            KickStart.Disable();
             isInit = false;
         }
         
@@ -136,11 +136,22 @@ namespace TweakTech
                 if (MS)
                 {
                     MS.SwapMaterialDamage(false);
-                    MS.ResetMaterialToDefault();
+                    //MS.ResetMaterialToDefault();
                 }
                 BlockTweak.ApplyToBlockLocal(__instance);
             }
         }
+
+        /*
+        [HarmonyPatch(typeof(TankBlock))]
+        [HarmonyPatch("OnAttach")]//
+        private class FixFailInCalls
+        {
+            private static void Postfix(TankBlock __instance)
+            {
+                ReAimer.CreateOrUpdateForBlock(__instance);
+            }
+        }*/
 
         [HarmonyPatch(typeof(Explosion))]
         [HarmonyPatch("Explode")]//
@@ -171,52 +182,6 @@ namespace TweakTech
         }*/
 
 
-        [HarmonyPatch(typeof(TargetAimer))]
-        [HarmonyPatch("Init")]//
-        private class ChangeAimDelegate
-        {
-            static FieldInfo aimD = typeof(TargetAimer).GetField("AimDelegate", BindingFlags.NonPublic | BindingFlags.Instance);
-            private static bool Prefix(TargetAimer __instance, ref TankBlock block, ref Func<Vector3, Vector3> aimDelegate)
-            {
-                if (KickStart.WeaponAimModAvail)
-                    return true;
-                try
-                {
-                    if ((Func<Vector3, Vector3>)aimD.GetValue(__instance) != null && aimDelegate != null)
-                        return false;
-                }
-                catch
-                { //Debug.Log("TweakTech: Error with TargetAimer for " + block.name); 
-                }
-                return true;
-            }
-            private static void Postfix(TargetAimer __instance, ref TankBlock block, ref Func<Vector3, Vector3> aimDelegate)
-            {
-                if (KickStart.WeaponAimModAvail)
-                    return;
-                try
-                {
-                    //aimDelegate == null && 
-                    if ((bool)block)
-                    {
-                        var RA = block.GetComponent<ReAimer>();
-                        if (!(bool)RA)
-                        {
-                            RA = ReAimer.ApplyToBlock(block);
-                        }
-                        else
-                            ReAimer.UpdateExisting(block);
-                        RA.swatchDefault = (Func<Vector3,Vector3>)aimD.GetValue(__instance);
-                        aimD.SetValue(__instance, RA.swatchGet);
-                    }
-                }
-                catch
-                { //Debug.Log("TweakTech: Error with TargetAimer for " + block.name); 
-                }
-            }
-        }
-
-
         [HarmonyPatch(typeof(ModuleWeapon))]
         [HarmonyPatch("OnAttach")]//
         private class AddLazyAim
@@ -226,6 +191,7 @@ namespace TweakTech
                 if (KickStart.WeaponAimModAvail)
                     return;
                 TankLazyAim.Add(__instance.block.tank, __instance);
+                ReAimer.CreateOrUpdateForBlock(__instance.block);
             }
         }
 
@@ -342,7 +308,7 @@ namespace TweakTech
                             __result = DeathmatchExt.MakeNewDeathmatchTechs(__result);
                     }
                 }
-                catch (Exception e) { Debug.Log("TweakTech: OOOOOOOF " + e); }
+                catch (Exception e) { Debug.LogError("TweakTech: OOOOOOOF " + e); }
             }
         }
 

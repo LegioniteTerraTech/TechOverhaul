@@ -101,29 +101,29 @@ namespace TweakTech
             {
                 if (Block == null)
                 {
-                    //Debug.Log("TweakTech: BTBookmark - BLOCK IS NULL!!!");
+                    //Debug.Info("TweakTech: BTBookmark - BLOCK IS NULL!!!");
                     return;
                 }
                 if (BT.Main == null)
                 {
-                    //Debug.Log("TweakTech: BTBookmark - Init for block " + Block.name);
+                    //Debug.Info("TweakTech: BTBookmark - Init for block " + Block.name);
                     BT.Main = Tweaks.BlockTweaks.Find(delegate (BlockTweak cand) { return cand.Type == Block.BlockType; });
                 }
                 /*
                 Debug.Log("TweakTech: BTBookmark - Setting up for modded block " + Block.name + " based on " + BT.MainType);
                 if (Block.name != BT.MainType)
                 {
-                    Debug.Log("TweakTech: BTBookmark - Setting up for modded block " + Block.name + " based on " + BT.MainType);
+                    Debug.Info("TweakTech: BTBookmark - Setting up for modded block " + Block.name + " based on " + BT.MainType);
                     Destroy(BT);
                     return;
                 }*/
                 if (Block == blockF)
                 {
-                    //Debug.Log("TweakTech: BTBookmark - First call for block " + Block.name);
+                    //Debug.Info("TweakTech: BTBookmark - First call for block " + Block.name);
                 }
                 else
                 {
-                    Debug.Log("TweakTech: BTBookmark - Tweaked block " + Block.name);
+                    Debug.Info("TweakTech: BTBookmark - Tweaked block " + Block.name);
                     if (Adding)
                         BT.Main.ChangeBlock(Block);
                 }
@@ -180,7 +180,7 @@ namespace TweakTech
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("TweakTech: BlockTweak.ApplyToBlock.PrepBlock - error " + stepError + " | " + e);
+                    Debug.LogError("TweakTech: BlockTweak.ApplyToBlock.PrepBlock - error " + stepError + " | " + e);
                 }
             }
             return prefab;
@@ -208,7 +208,7 @@ namespace TweakTech
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("TweakTech: BlockTweak.ApplyToBlock.PrepBlock - error " + stepError + " | " + e);
+                    Debug.LogError("TweakTech: BlockTweak.ApplyToBlock.PrepBlock - error " + stepError + " | " + e);
                 }
             }
             return prefab;
@@ -217,7 +217,7 @@ namespace TweakTech
         {
             int stepError = 0;
             TankBlock prefab = Singleton.Manager<ManSpawn>.inst.GetBlockPrefab(Type);
-            Debug.Log("TweakTech: ApplyBlockTweaks - Changing " + blockI.name);
+            Debug.Info("TweakTech: ApplyBlockTweaks - Changing " + blockI.name);
             try
             {
                 var HPOG = prefab.GetComponent<Damageable>();
@@ -235,22 +235,23 @@ namespace TweakTech
                 if (FragilityReplace != -1)
                     blockI.damage.m_DamageDetachFragility = FragilityReplace;
                 stepError++;
+                MiscChanges?.Invoke(blockI, true, BlockTypes.GSOAIController_111);
+                stepError++;
+                var FD = blockI.GetComponent<FireData>();
+                if ((bool)FD)
+                    if (FD.m_BulletPrefab != null)
+                        FD.m_BulletPrefab = WeaponTweak.GetOrSetBPrefab(blockI);
+                stepError++;
                 if (WT != null)
                     WT.ChangeWeapon(blockI);
                 stepError++;
                 if (ST != null)
                     ST.ChangeScanner(blockI);
-                stepError++;
                 // Additional changes (technical)\
-                MiscChanges?.Invoke(blockI, true, BlockTypes.GSOAIController_111);
-                var FD = blockI.GetComponent<FireData>();
-                if ((bool)FD)
-                    if (FD.m_BulletPrefab != null)
-                        FD.m_BulletPrefab = WeaponTweak.GetOrSetBPrefab(blockI);
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: BlockTweak.ChangeBlock - error " + stepError + " " + e);
+                Debug.LogError("TweakTech: BlockTweak.ChangeBlock - error " + stepError + " " + e);
             }
             return blockI;
         }
@@ -270,7 +271,7 @@ namespace TweakTech
                 }
                 catch (Exception e)
                 {
-                    Debug.Log("TweakTech: BlockTweak.ResetApplyToBlock - " + e);
+                    Debug.LogError("TweakTech: BlockTweak.ResetApplyToBlock - " + e);
                 }
             }
             return block;
@@ -349,7 +350,7 @@ namespace TweakTech
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
+                Debug.LogError("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
             }
             return block;
         }
@@ -365,7 +366,7 @@ namespace TweakTech
             }
             catch (Exception e)
             {
-                Debug.Log("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
+                Debug.LogError("TweakTech: ApplyBlockTweaks - fail in changing " + block.name + "  | " + e);
             }
             return block;
         }
