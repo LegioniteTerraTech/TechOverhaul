@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Nuterra.BlockInjector;
 
 namespace TweakTech
 {
@@ -113,23 +112,6 @@ namespace TweakTech
             blockIDs = BTs.ToArray();
             return data;
         }
-        internal static List<BlockTypes> GetAllBlockTypesUsed(string blueprint)
-        {
-            if (!PreppedOnce)
-            {
-                PrepBeforeExporting();
-            }
-            List<BlockMemory> mems = JSONToMemory(blueprint);
-            mems = mems.Distinct().ToList();
-            List<BlockTypes> BTs = new List<BlockTypes>();
-            foreach (BlockMemory mem in mems)
-            {
-                if (StringToBIBlockType(mem.t, out BlockTypes type))
-                    BTs.Add(type);
-            }
-            return BTs;
-        }
-
 
         // Handled within
         private static FieldInfo allModdedBlocks = typeof(ManMods).GetField("m_BlockIDReverseLookup", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -190,35 +172,10 @@ namespace TweakTech
             {
                 if (!TryGetMismatchNames(mem, ref type))
                 {
-                    if (StringToBIBlockType(mem, out BlockTypes BTC))
-                    {
-                        return BTC;
-                    }
                     type = GetBlockIDLogFree(mem);
                 }
             }
             return type;
-        }
-        private static bool StringToBIBlockType(string mem, out BlockTypes BT) // BLOCK INJECTOR
-        {
-            BT = BlockTypes.GSOAIController_111;
-            if (!KickStart.isBlockInjectorPresent)
-                return false;
-            int hashName = mem.GetHashCode();
-            foreach (KeyValuePair<int, CustomBlock> pair in BlockLoader.CustomBlocks)
-            {
-                CustomBlock CB = pair.Value;
-                if (CB != null)
-                {
-                    if (CB.Name.GetHashCode() == hashName)
-                    {
-                        //Debug.Log("TACtical_AI: StringToBIBlockType - Found Match in BlockInjector for " + mem);
-                        BT = (BlockTypes)pair.Key;
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
 
         private static List<BlockMemory> JSONToMemory(string toLoad)

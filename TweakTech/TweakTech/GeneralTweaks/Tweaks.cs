@@ -1121,7 +1121,7 @@ namespace TweakTech
                             boost.SetValue(Miss, (float)boost.GetValue(Miss) * 2.5f);
                         var Seek = BP.gameObject.GetComponent<SeekingProjectile>();
                         if ((bool)Seek)
-                            seekSped.SetValue(Seek, (float)seekSped.GetValue(Seek) / 2.5f);
+                            seekSped.SetValue(Seek, (float)seekSped.GetValue(Seek) / 1.8f);
                         Debug.Log("TweakTech: NerfCruiseMissile - nerfed " + TB.name);
                     }
                 }

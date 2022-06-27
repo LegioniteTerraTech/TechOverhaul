@@ -243,7 +243,7 @@ namespace TweakTech
             }
             private static bool SafeCheck(ModuleDetachableLink __instance)
             {
-                return __instance.GetComponent<Class1.ModuleFuseHalf>();
+                return __instance.GetComponent<ModuleFuseHalf>();
             }
         }
 

@@ -142,12 +142,12 @@ namespace TweakTech
                     if (MWG.AimWithTrajectory())
                     {
                         swatch = RoughPredictAim;
-                        Debug.Log("TweakTech: Changed TargetAimer(Arc) for " + TB.name);
+                        //Debug.Log("TweakTech: Changed TargetAimer(Arc) for " + TB.name);
                     }
                     else
                     {
                         swatch = RoughPredictAimS;
-                        Debug.Log("TweakTech: Changed TargetAimer(Straight) for " + TB.name);
+                        //Debug.Log("TweakTech: Changed TargetAimer(Straight) for " + TB.name);
                     }
                     var BF = TB.GetComponent<FireData>().m_BulletPrefab;
                     if (BF)
@@ -349,30 +349,35 @@ namespace TweakTech
         /// <param name="tank"></param>
         private void GetVelocityDifference(Tank tank)
         {
+            Debug.Assert(!tank, "TANK ON CALL IS NULL");
             Visible target = tank.Weapons.GetManualTarget();
-            if (target == null)
+            if (!target)
             {
-                if (KickStart.TACAIModAvail)
+                try
                 {
-                    var helper = tank.GetComponent<AIECore.TankAIHelper>();
-                    if (helper.AIState != 0)
-                        target = helper.lastEnemy;
+                    if (KickStart.TACAIModAvail)
+                    {
+                        var helper = tank.GetComponent<AIECore.TankAIHelper>();
+                        if (helper.AIState != 0)
+                            target = helper.lastEnemy;
+                        else
+                            target = tank.Vision.GetFirstVisibleTechIsEnemy(tank.Team);
+                    }
                     else
                         target = tank.Vision.GetFirstVisibleTechIsEnemy(tank.Team);
                 }
-                else
-                    target = tank.Vision.GetFirstVisibleTechIsEnemy(tank.Team);
+                catch { }
             }
-            if ((bool)tank.rbody)
+            if (tank.rbody)
                 VelocityDiff = -tank.rbody.velocity;// * Time.fixedDeltaTime;
             else
                 VelocityDiff = Vector3.zero;
-            if (!(bool)target)
+            if (!target)
             {
                 Moving = !VelocityDiff.Approximately(Vector3.zero);
                 return;
             }
-            if ((bool)target.rbody)
+            if (target.rbody)
             {
                 VelocityDiff += target.rbody.velocity;// * Time.fixedDeltaTime;
                 Moving = !VelocityDiff.Approximately(Vector3.zero);
