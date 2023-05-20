@@ -29,6 +29,7 @@ namespace TweakTech
 #endif
 
         internal static bool RandomAdditionsAvail = false;
+        internal static bool ActiveDefensesAvail = false;
         internal static bool WeaponAimModAvail = false;
         internal static bool TACAIModAvail = false;
         internal static bool FusionBlockAvail = false;
@@ -62,6 +63,8 @@ namespace TweakTech
             }
             if (!RandomAdditionsAvail)
                 ManUI.inst.ShowErrorPopup("TweakTech: Please install Random Additions on the Steam Workshop to use the mod TweakTech, it is a functional dependancy.");
+
+            ActiveDefensesAvail = LookForMod("ActiveDefenses");
 
             try
             {

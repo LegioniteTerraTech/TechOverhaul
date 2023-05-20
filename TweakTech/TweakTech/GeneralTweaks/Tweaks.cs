@@ -1021,7 +1021,7 @@ namespace TweakTech
         }
         private static void PointDefenseBase(TankBlock TB, bool AlreadyDid, BlockTypes Override, bool Flares = false)
         {
-            if (!(bool)TB || !KickStart.RandomAdditionsAvail)
+            if (!(bool)TB || !KickStart.ActiveDefensesAvail)
                 return;
             bool worked = false;
             if (AlreadyDid)

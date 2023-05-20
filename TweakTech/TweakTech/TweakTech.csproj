@@ -58,6 +58,9 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\285920\2685130411\0Nuterra.NativeOptions.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ActiveDefenses">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\285920\2848336133\ActiveDefenses.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\TerraTech\TerraTechWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
@@ -112,14 +115,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DeathmatchPrefabs.cs" />
     <Compile Include="Debug.cs" />
     <Compile Include="GeneralTweaks\BlockTweak.cs" />
     <Compile Include="ChangePatcher.cs" />
     <Compile Include="NewMechanics\DamageTypesExt.cs" />
     <Compile Include="GeneralTweaks\DamageTweak.cs" />
     <Compile Include="KickStart.cs" />
-    <Compile Include="DeathmatchExt.cs" />
     <Compile Include="RawTechLoaderLite.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

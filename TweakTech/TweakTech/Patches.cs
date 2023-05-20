@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using HarmonyLib;
 using System.Reflection;
-using FusionBlock;
+//using FusionBlock;
 
 namespace TweakTech
 {
@@ -207,6 +207,7 @@ namespace TweakTech
             }
         }
 
+        /*
         [HarmonyPatch(typeof(ModuleDetachableLink))]
         [HarmonyPatch("DetachBlock")]//
         private class ReturnBoltsOnFire
@@ -245,7 +246,7 @@ namespace TweakTech
             {
                 return __instance.GetComponent<ModuleFuseHalf>();
             }
-        }
+        }*/
 
         
         
@@ -279,36 +280,6 @@ namespace TweakTech
         {
             private static void Prefix()
             {
-                if (!DeathmatchExt.Ready)
-                {
-                    DeathmatchExt.SetReady();
-                }
-            }
-        }
-
-        [HarmonyPatch(typeof(MultiplayerTechSelectGroupAsset))]
-        [HarmonyPatch("GetTechPresets")]//
-        private class ChangeDeathmatchChoices
-        {
-            /*
-            static FieldInfo loadouts = typeof(ModePVP<>)
-                       .GetField("m_AvailableLoadouts", BindingFlags.NonPublic | BindingFlags.Instance);
-            */
-            private static void Postfix(MultiplayerTechSelectGroupAsset __instance, ref List<MultiplayerTechSelectPresetAsset> __result)
-            {
-                try
-                {
-                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.Space))
-                    {
-                        Debug.Log("Load DeathmatchExt 1: " + __result.Count());
-                    }
-                    else
-                    {
-                        if (DeathmatchExt.Ready)
-                            __result = DeathmatchExt.MakeNewDeathmatchTechs(__result);
-                    }
-                }
-                catch (Exception e) { Debug.LogError("TweakTech: OOOOOOOF " + e); }
             }
         }
 
@@ -398,103 +369,104 @@ namespace TweakTech
                 return true;
             }
 
-            [HarmonyPatch(typeof(ModuleBooster))]
-            [HarmonyPatch("DriveControlInput")]//
-            private class MakeBoostersAffectable
-            {
-                private static bool Prefix(ModuleBooster __instance, ref TankControl.ControlState driveData)
-                {
-                    var Status = __instance.GetComponent<StatusCondition>();
-                    if (Status)
-                    {
-                        TankControl.ControlState driveR;
-                        TankControl.State state;
-                        float drivePower;
-                        switch (Status.Status)
-                        {
-                            case StatusType.Freezing:
-                            case StatusType.EMF:
-                                drivePower = Status.GetOpPercent();
-                                state = new TankControl.State();
-                                state.m_BoostJets =  driveData.BoostJets ? Status.allowModuleUpdate : false;
-                                state.m_BoostProps = driveData.BoostProps ? Status.allowModuleUpdate : false;
-                                state.m_InputMovement = driveData.InputMovement * drivePower;
-                                state.m_InputRotation = driveData.InputRotation * drivePower;
-                                driveR = new TankControl.ControlState();
-                                driveR.m_State = state;
-                                driveData = driveR;
-                                break;
-                        }
-                    }
-                    return true;
-                }
-            }
+        }
 
-            [HarmonyPatch(typeof(ModuleLinearMotionEngine))]
-            [HarmonyPatch("OnDriveControl")]//
-            private class MakeLMEAffectable
+        [HarmonyPatch(typeof(ModuleBooster))]
+        [HarmonyPatch("DriveControlInput")]//
+        private class MakeBoostersAffectable
+        {
+            private static bool Prefix(ModuleBooster __instance, ref TankControl.ControlState driveData)
             {
-                private static bool Prefix(ModuleLinearMotionEngine __instance, ref TankControl.ControlState driveData)
+                var Status = __instance.GetComponent<StatusCondition>();
+                if (Status)
                 {
-                    var Status = __instance.GetComponent<StatusCondition>();
-                    if (Status)
+                    TankControl.ControlState driveR;
+                    TankControl.State state;
+                    float drivePower;
+                    switch (Status.Status)
                     {
-                        TankControl.ControlState driveR;
-                        TankControl.State state;
-                        float drivePower;
-                        switch (Status.Status)
-                        {
-                            case StatusType.Freezing:
-                            case StatusType.EMF:
-                                drivePower = Status.GetOpPercent();
-                                state = new TankControl.State();
-                                state.m_BoostJets = driveData.BoostJets ? Status.allowModuleUpdate : false;
-                                state.m_BoostProps = driveData.BoostProps ? Status.allowModuleUpdate : false;
-                                state.m_InputMovement = driveData.InputMovement * drivePower;
-                                state.m_InputRotation = driveData.InputRotation * drivePower;
-                                driveR = new TankControl.ControlState();
-                                driveR.m_State = state;
-                                driveData = driveR;
-                                break;
-                        }
+                        case StatusType.Freezing:
+                        case StatusType.EMF:
+                            drivePower = Status.GetOpPercent();
+                            state = new TankControl.State();
+                            state.m_BoostJets = driveData.BoostJets ? Status.allowModuleUpdate : false;
+                            state.m_BoostProps = driveData.BoostProps ? Status.allowModuleUpdate : false;
+                            state.m_InputMovement = driveData.InputMovement * drivePower;
+                            state.m_InputRotation = driveData.InputRotation * drivePower;
+                            driveR = new TankControl.ControlState();
+                            driveR.m_State = state;
+                            driveData = driveR;
+                            break;
                     }
-                    return true;
                 }
+                return true;
             }
+        }
 
-            [HarmonyPatch(typeof(ModuleHover))]
-            [HarmonyPatch("DriveControlInput")]//
-            private class MakeHoversAffectable
+        [HarmonyPatch(typeof(ModuleLinearMotionEngine))]
+        [HarmonyPatch("OnDriveControl")]//
+        private class MakeLMEAffectable
+        {
+            private static bool Prefix(ModuleLinearMotionEngine __instance, ref TankControl.ControlState driveData)
             {
-                private static bool Prefix(ModuleHover __instance, ref TankControl.ControlState controlState)
+                var Status = __instance.GetComponent<StatusCondition>();
+                if (Status)
                 {
-                    var Status = __instance.GetComponent<StatusCondition>();
-                    if (Status)
+                    TankControl.ControlState driveR;
+                    TankControl.State state;
+                    float drivePower;
+                    switch (Status.Status)
                     {
-                        TankControl.ControlState driveR;
-                        TankControl.State state;
-                        float drivePower;
-                        switch (Status.Status)
-                        {
-                            case StatusType.Freezing:
-                                drivePower = Status.GetOpPercent();
-                                state = new TankControl.State();
-                                state.m_InputMovement = controlState.InputMovement * drivePower;
-                                state.m_InputRotation = controlState.InputRotation * drivePower;
-                                driveR = new TankControl.ControlState();
-                                driveR.m_State = state;
-                                controlState = driveR;
-                                break;
-                            case StatusType.EMF:
-                                foreach (HoverJet hj in __instance.GetComponentsInChildren<HoverJet>())
-                                {
-                                    hj.OnControlInput(controlState, 0);
-                                }
-                                return false;
-                        }
+                        case StatusType.Freezing:
+                        case StatusType.EMF:
+                            drivePower = Status.GetOpPercent();
+                            state = new TankControl.State();
+                            state.m_BoostJets = driveData.BoostJets ? Status.allowModuleUpdate : false;
+                            state.m_BoostProps = driveData.BoostProps ? Status.allowModuleUpdate : false;
+                            state.m_InputMovement = driveData.InputMovement * drivePower;
+                            state.m_InputRotation = driveData.InputRotation * drivePower;
+                            driveR = new TankControl.ControlState();
+                            driveR.m_State = state;
+                            driveData = driveR;
+                            break;
                     }
-                    return true;
                 }
+                return true;
+            }
+        }
+
+        [HarmonyPatch(typeof(ModuleHover))]
+        [HarmonyPatch("DriveControlInput")]//
+        private class MakeHoversAffectable
+        {
+            private static bool Prefix(ModuleHover __instance, ref TankControl.ControlState controlState)
+            {
+                var Status = __instance.GetComponent<StatusCondition>();
+                if (Status)
+                {
+                    TankControl.ControlState driveR;
+                    TankControl.State state;
+                    float drivePower;
+                    switch (Status.Status)
+                    {
+                        case StatusType.Freezing:
+                            drivePower = Status.GetOpPercent();
+                            state = new TankControl.State();
+                            state.m_InputMovement = controlState.InputMovement * drivePower;
+                            state.m_InputRotation = controlState.InputRotation * drivePower;
+                            driveR = new TankControl.ControlState();
+                            driveR.m_State = state;
+                            controlState = driveR;
+                            break;
+                        case StatusType.EMF:
+                            foreach (HoverJet hj in __instance.GetComponentsInChildren<HoverJet>())
+                            {
+                                hj.OnControlInput(controlState, 0);
+                            }
+                            return false;
+                    }
+                }
+                return true;
             }
         }
     }

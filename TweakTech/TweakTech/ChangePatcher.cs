@@ -20,7 +20,7 @@ namespace TweakTech
         internal static float GlobalHealthMulti = 1;//1.5f;//2f;
         internal const float GlobalDetachMulti = 0.5f;
 
-        internal const float HighExplosiveSpeedMulti = 0.4f;
+        internal const float HighExplosiveSpeedMulti = 0.6f;
         internal const float FasterSpeedMulti = 1.5f;
 
         internal const int GC_HealthPoolStandard = 275;
